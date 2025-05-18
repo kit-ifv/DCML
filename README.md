@@ -1,0 +1,1 @@
+This project supplies functionalities for modeling of discrete choice situations.
