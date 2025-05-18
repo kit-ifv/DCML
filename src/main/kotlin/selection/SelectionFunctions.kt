@@ -1,7 +1,7 @@
 package modeling.discreteChoice.selection
 
 import modeling.discreteChoice.SelectionFunction
-import utils.collections.select
+import modeling.discreteChoice.utility.select
 import kotlin.random.Random
 
 class RandomWeightedSelect<X> : SelectionFunction<X> {
