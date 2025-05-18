@@ -1,7 +1,7 @@
 package modeling.discreteChoice.distribution
 
 import modeling.discreteChoice.DistributionFunction
-import modeling.models.ChoiceAlternative
+import modeling.discreteChoice.models.ChoiceAlternative
 
 class CrossNestedLogit<R : Any, A, P>(
     private val structure: CrossNestStructureData<R, A, P>

@@ -1,11 +1,10 @@
 package modeling.discreteChoice
 
-import modeling.models.ChoiceAlternative
-import modeling.models.ChoiceFilter
-import modeling.models.ChoiceModel
-import modeling.models.FixedChoicesModel
-import utils.collections.associateWithNotNull
-import kotlin.collections.get
+import modeling.discreteChoice.models.ChoiceAlternative
+import modeling.discreteChoice.models.ChoiceFilter
+import modeling.discreteChoice.models.ChoiceModel
+import modeling.discreteChoice.models.FixedChoicesModel
+import modeling.discreteChoice.utility.associateWithNotNull
 import kotlin.random.Random
 
 /**

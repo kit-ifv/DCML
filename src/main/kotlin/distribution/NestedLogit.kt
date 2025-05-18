@@ -1,7 +1,7 @@
 package modeling.discreteChoice.distribution
 
 import modeling.discreteChoice.DistributionFunction
-import modeling.models.ChoiceAlternative
+import modeling.discreteChoice.models.ChoiceAlternative
 import utils.collections.printAsTree
 import java.util.*
 import kotlin.math.exp

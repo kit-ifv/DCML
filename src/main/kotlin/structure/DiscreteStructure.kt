@@ -6,7 +6,7 @@ import modeling.discreteChoice.utility.MapBasedUtilityEnumeration
 import modeling.discreteChoice.utility.Rule
 import modeling.discreteChoice.utility.RuleBasedUtilityAssignment
 import modeling.discreteChoice.utility.UtilityEnumeration
-import modeling.models.ChoiceAlternative
+import modeling.discreteChoice.models.ChoiceAlternative
 
 class DiscreteStructure<R : Any, A, P>(
     lambda: DiscreteStructure<R, A, P>.() -> Unit,

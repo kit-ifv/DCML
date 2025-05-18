@@ -6,7 +6,7 @@ import modeling.discreteChoice.distribution.NestStructureData
 import modeling.discreteChoice.distribution.NestedStructureDataBuilder
 import modeling.discreteChoice.utility.MapBasedUtilityEnumeration
 import modeling.discreteChoice.utility.UtilityEnumeration
-import modeling.models.ChoiceAlternative
+import modeling.discreteChoice.models.ChoiceAlternative
 
 class NestedStructure<R : Any, A, P>(
 

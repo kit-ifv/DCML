@@ -6,7 +6,7 @@ import modeling.discreteChoice.distribution.CrossNestedStructureDataBuilder
 import modeling.discreteChoice.distribution.NestStructure
 import modeling.discreteChoice.utility.MapBasedUtilityEnumeration
 import modeling.discreteChoice.utility.UtilityEnumeration
-import modeling.models.ChoiceAlternative
+import modeling.discreteChoice.models.ChoiceAlternative
 
 class CrossNestedStructure<R : Any, A, P>(
     content: CrossNestedDAG<R, P>.() -> Unit,

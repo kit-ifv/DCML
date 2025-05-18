@@ -4,7 +4,7 @@ import modeling.discreteChoice.UtilityAssignment
 import modeling.discreteChoice.UtilityFunction
 import modeling.discreteChoice.distribution.NestStructure
 import modeling.discreteChoice.utility.UtilityEnumeration
-import modeling.models.ChoiceAlternative
+import modeling.discreteChoice.models.ChoiceAlternative
 
 fun interface UtilityAssignmentBuilder<R : Any, A, P> where A : ChoiceAlternative<R> {
 

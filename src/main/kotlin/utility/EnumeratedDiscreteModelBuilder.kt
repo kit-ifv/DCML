@@ -10,9 +10,9 @@ import modeling.discreteChoice.distribution.NestedStructureDataBuilder
 import modeling.discreteChoice.selection.RandomWeightedSelect
 import modeling.discreteChoice.structure.UtilityAssignmentBuilder
 import modeling.discreteChoice.structure.UtilityEnumerationBuilder
-import modeling.models.ChoiceAlternative
-import modeling.models.ChoiceFilter
-import modeling.models.noFilter
+import modeling.discreteChoice.models.ChoiceAlternative
+import modeling.discreteChoice.models.ChoiceFilter
+import modeling.discreteChoice.models.noFilter
 
 fun interface DiscreteModelBuilder<R : Any, A, P> where A : ChoiceAlternative<R> {
     fun build(parameters: P): DiscreteChoiceModel<R, A, P>
