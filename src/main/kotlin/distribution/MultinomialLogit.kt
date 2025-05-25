@@ -1,6 +1,6 @@
-package modeling.discreteChoice.distribution
+package discreteChoice.distribution
 
-import modeling.discreteChoice.DistributionFunction
+import discreteChoice.DistributionFunction
 import kotlin.math.exp
 
 class MultinomialLogit<X, P> : DistributionFunction<X, P> {

@@ -1,6 +1,6 @@
 package utils.collections
 
-import modeling.discreteChoice.utility.indentSubsequentLines
+import discreteChoice.utility.indentSubsequentLines
 
 /**
  * Print the given treelike structure with pretty indentation on the console.

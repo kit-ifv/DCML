@@ -1,12 +1,12 @@
-package modeling.discreteChoice.structure
+package discreteChoice.structure
 
-import modeling.discreteChoice.UtilityFunction
-import modeling.discreteChoice.distribution.NestStructure
-import modeling.discreteChoice.distribution.NestStructureData
-import modeling.discreteChoice.distribution.NestedStructureDataBuilder
-import modeling.discreteChoice.utility.MapBasedUtilityEnumeration
-import modeling.discreteChoice.utility.UtilityEnumeration
-import modeling.discreteChoice.models.ChoiceAlternative
+import discreteChoice.UtilityFunction
+import discreteChoice.distribution.NestStructure
+import discreteChoice.distribution.NestStructureData
+import discreteChoice.distribution.NestedStructureDataBuilder
+import discreteChoice.utility.MapBasedUtilityEnumeration
+import discreteChoice.utility.UtilityEnumeration
+import discreteChoice.models.ChoiceAlternative
 
 class NestedStructure<R : Any, A, P>(
 

@@ -1,4 +1,4 @@
-package modeling.discreteChoice.models
+package discreteChoice.models
 
 import kotlin.random.Random
 

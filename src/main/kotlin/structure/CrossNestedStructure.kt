@@ -1,12 +1,12 @@
-package modeling.discreteChoice.structure
+package discreteChoice.structure
 
-import modeling.discreteChoice.UtilityFunction
-import modeling.discreteChoice.distribution.CrossNestStructureData
-import modeling.discreteChoice.distribution.CrossNestedStructureDataBuilder
-import modeling.discreteChoice.distribution.NestStructure
-import modeling.discreteChoice.utility.MapBasedUtilityEnumeration
-import modeling.discreteChoice.utility.UtilityEnumeration
-import modeling.discreteChoice.models.ChoiceAlternative
+import discreteChoice.UtilityFunction
+import discreteChoice.distribution.CrossNestStructureData
+import discreteChoice.distribution.CrossNestedStructureDataBuilder
+import discreteChoice.distribution.NestStructure
+import discreteChoice.utility.MapBasedUtilityEnumeration
+import discreteChoice.utility.UtilityEnumeration
+import discreteChoice.models.ChoiceAlternative
 
 class CrossNestedStructure<R : Any, A, P>(
     content: CrossNestedDAG<R, P>.() -> Unit,

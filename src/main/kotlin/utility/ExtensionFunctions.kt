@@ -1,4 +1,4 @@
-package modeling.discreteChoice.utility
+package discreteChoice.utility
 
 import kotlin.math.sign
 

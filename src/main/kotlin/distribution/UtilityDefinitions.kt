@@ -1,4 +1,4 @@
-package modeling.discreteChoice.distribution
+package discreteChoice.distribution
 
 //
 // /**

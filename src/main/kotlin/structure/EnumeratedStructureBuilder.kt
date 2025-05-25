@@ -1,10 +1,10 @@
-package modeling.discreteChoice.structure
+package discreteChoice.structure
 
-import modeling.discreteChoice.UtilityAssignment
-import modeling.discreteChoice.UtilityFunction
-import modeling.discreteChoice.distribution.NestStructure
-import modeling.discreteChoice.utility.UtilityEnumeration
-import modeling.discreteChoice.models.ChoiceAlternative
+import discreteChoice.UtilityAssignment
+import discreteChoice.UtilityFunction
+import discreteChoice.distribution.NestStructure
+import discreteChoice.utility.UtilityEnumeration
+import discreteChoice.models.ChoiceAlternative
 
 fun interface UtilityAssignmentBuilder<R : Any, A, P> where A : ChoiceAlternative<R> {
 

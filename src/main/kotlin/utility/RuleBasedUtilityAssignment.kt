@@ -1,8 +1,9 @@
-package modeling.discreteChoice.utility
+package discreteChoice.utility
 
-import modeling.discreteChoice.UtilityAssignment
-import modeling.discreteChoice.UtilityFunction
-import modeling.discreteChoice.models.ChoiceAlternative
+import discreteChoice.UtilityAssignment
+import discreteChoice.UtilityFunction
+import discreteChoice.models.ChoiceAlternative
+
 
 data class Rule<A, P>(
     private val condition: (A) -> Boolean,

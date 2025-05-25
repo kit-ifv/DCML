@@ -1,12 +1,12 @@
-package modeling.discreteChoice.structure
+package discreteChoice.structure
 
-import modeling.discreteChoice.UtilityAssignment
-import modeling.discreteChoice.UtilityFunction
-import modeling.discreteChoice.utility.MapBasedUtilityEnumeration
-import modeling.discreteChoice.utility.Rule
-import modeling.discreteChoice.utility.RuleBasedUtilityAssignment
-import modeling.discreteChoice.utility.UtilityEnumeration
-import modeling.discreteChoice.models.ChoiceAlternative
+import discreteChoice.UtilityAssignment
+import discreteChoice.UtilityFunction
+import discreteChoice.utility.MapBasedUtilityEnumeration
+import discreteChoice.utility.Rule
+import discreteChoice.utility.RuleBasedUtilityAssignment
+import discreteChoice.utility.UtilityEnumeration
+import discreteChoice.models.ChoiceAlternative
 
 class DiscreteStructure<R : Any, A, P>(
     lambda: DiscreteStructure<R, A, P>.() -> Unit,

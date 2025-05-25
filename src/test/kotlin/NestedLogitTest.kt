@@ -1,8 +1,8 @@
-package modeling.discreteChoice
+package discreteChoice
 
-import modeling.discreteChoice.models.ChoiceAlternative
-import modeling.discreteChoice.structure.NestedStructure
-import modeling.discreteChoice.utility.nestedLogit
+import discreteChoice.models.ChoiceAlternative
+import discreteChoice.structure.NestedStructure
+import discreteChoice.utility.nestedLogit
 
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows

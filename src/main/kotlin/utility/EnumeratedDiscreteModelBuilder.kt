@@ -1,18 +1,18 @@
-package modeling.discreteChoice.utility
+package discreteChoice.utility
 
-import modeling.discreteChoice.DiscreteChoiceModel
-import modeling.discreteChoice.EnumeratedDiscreteChoiceModel
-import modeling.discreteChoice.distribution.CrossNestedLogit
-import modeling.discreteChoice.distribution.CrossNestedStructureDataBuilder
-import modeling.discreteChoice.distribution.MultinomialLogit
-import modeling.discreteChoice.distribution.NestedLogit
-import modeling.discreteChoice.distribution.NestedStructureDataBuilder
-import modeling.discreteChoice.selection.RandomWeightedSelect
-import modeling.discreteChoice.structure.UtilityAssignmentBuilder
-import modeling.discreteChoice.structure.UtilityEnumerationBuilder
-import modeling.discreteChoice.models.ChoiceAlternative
-import modeling.discreteChoice.models.ChoiceFilter
-import modeling.discreteChoice.models.noFilter
+import discreteChoice.DiscreteChoiceModel
+import discreteChoice.EnumeratedDiscreteChoiceModel
+import discreteChoice.distribution.CrossNestedLogit
+import discreteChoice.distribution.CrossNestedStructureDataBuilder
+import discreteChoice.distribution.MultinomialLogit
+import discreteChoice.distribution.NestedLogit
+import discreteChoice.distribution.NestedStructureDataBuilder
+import discreteChoice.selection.RandomWeightedSelect
+import discreteChoice.structure.UtilityAssignmentBuilder
+import discreteChoice.structure.UtilityEnumerationBuilder
+import discreteChoice.models.ChoiceAlternative
+import discreteChoice.models.ChoiceFilter
+import discreteChoice.models.noFilter
 
 fun interface DiscreteModelBuilder<R : Any, A, P> where A : ChoiceAlternative<R> {
     fun build(parameters: P): DiscreteChoiceModel<R, A, P>
