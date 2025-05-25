@@ -2,7 +2,7 @@ plugins {
     kotlin("jvm") version "2.1.20"
 }
 
-group = "org.example"
+group = "edu.kit.ifv.mobitopp"
 version = "1.0-SNAPSHOT"
 
 repositories {
