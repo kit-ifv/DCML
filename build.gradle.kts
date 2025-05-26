@@ -1,9 +1,10 @@
 plugins {
     kotlin("jvm") version "2.1.20"
+    id("maven-publish")
 }
 
 group = "edu.kit.ifv.mobitopp"
-version = "1.0-SNAPSHOT"
+
 
 repositories {
     mavenCentral()
@@ -18,4 +19,22 @@ tasks.test {
 }
 kotlin {
     jvmToolchain(21)
+}
+version = project.findProperty("version")?.toString() ?: "1.0.0"
+publishing {
+    publications {
+        register("mavenData", MavenPublication::class) {
+            from(components["kotlin"])
+        }
+    }
+    repositories {
+        maven {
+            url = uri("https://nexus.ifv.kit.edu/repository/maven-releases/")
+
+            credentials {
+                username = project.findProperty("nexusUsername") as String?
+                password = project.findProperty("nexusPassword") as String?
+            }
+        }
+    }
 }

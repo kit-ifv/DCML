@@ -1,0 +1,26 @@
+image: gradle:8.5-jdk17
+
+stages:
+  - build
+  - publish
+
+build:
+  stage: build
+  script:
+    - ./gradlew build
+  artifacts:
+    paths:
+      - build/libs/
+
+publish:
+  stage: publish
+  script:
+    - ./gradlew publish -PnexusUsername=$NEXUS_USERNAME -PnexusPassword=$NEXUS_PASSWORD -Pversion=$CI_PIPELINE_IID
+  dependencies:
+    - build
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: manual
+  allow_failure: false
+  environment:
+    name: publishing
