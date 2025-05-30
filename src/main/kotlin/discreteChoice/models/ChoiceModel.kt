@@ -4,7 +4,9 @@ import kotlin.random.Random
 
 /**
  * Wrapper for `ChoiceAlternative` interface, but defines a `with` function, which should transform choosable objects
- * `X` to `ChoiceAlternative` objects. (not sure)
+ * `X` to `ChoiceAlternative` objects. (not sure).
+ * Also adds a value which contains a Random Object. Likely to be later used to select something. Useful for setting a
+ * seed.
  */
 interface ChoiceSituation<A, X : Any> where A : ChoiceAlternative<X> {
     fun with(choice: X): A
@@ -13,7 +15,7 @@ interface ChoiceSituation<A, X : Any> where A : ChoiceAlternative<X> {
 }
 
 /**
- * A choice situation may contain additional appended information but is basically only a wrapper for [X]
+ * A choice situation may contain additional appended information but is basically only a wrapper for [X].
  * Thus the equals and hash implementaion of that type can be used for mapping to a certain utility function.
  */
 abstract class ChoiceAlternative<R : Any> {
