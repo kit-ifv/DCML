@@ -31,6 +31,12 @@ fun interface SelectionFunction<X> {
     fun calculateSelection(options: Map<X, Double>, random: Random): X
 }
 
+/**
+ * Basic structure of a `ChoiceModel` for a discrete situation.
+ * @property R *some* choosable object.
+ * @property A a `ChoiceAlternative<R>` type.
+ * @property P
+ */
 data class DiscreteChoiceModel<R : Any, A, P>(
     override val name: String,
     override val choiceFilter: ChoiceFilter<A>,

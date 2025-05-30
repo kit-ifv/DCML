@@ -2,6 +2,10 @@ package discreteChoice.models
 
 import kotlin.random.Random
 
+/**
+ * Wrapper for `ChoiceAlternative` interface, but defines a `with` function, which should transform choosable objects
+ * `X` to `ChoiceAlternative` objects. (not sure)
+ */
 interface ChoiceSituation<A, X : Any> where A : ChoiceAlternative<X> {
     fun with(choice: X): A
 
@@ -31,12 +35,24 @@ fun interface ChoiceFilter<R> {
 
 fun <R> noFilter() = ChoiceFilter<R> { choices -> choices }
 
+/**
+ * Most basic structure of a Model selecting something.
+ * @property A type of the choosable objects. `A` because of "Alternative".
+ * @property R the return type. Whatever this Model selects, R is the type you get. This can be a single `A` of the
+ * choices, but it doesn't have to. It can be a List<`A`>, Map, Set... whatever you wish your ChoiceModel to return.
+ */
 interface ChoiceModel<A, R> {
     val name: String
     val choiceFilter: ChoiceFilter<A>
     fun select(choices: Set<A>, random: Random): R
 }
 
+/**
+ * Extension function of a ChoiceModel. Applies the `choiceFilter` of the ChoiceModel on the given `alternatives`
+ * @param alternatives the set of objects to choose from. These are filtered, with the filter of the ChoiceModel, and
+ * then, out of the leftover alternatives, chosen from.
+ * @param random A function providing Random. Passed to the select function.
+ */
 fun <A, R : Any> ChoiceModel<A, R>.filterAndSelect(
     alternatives: Set<A>,
     random: Random
