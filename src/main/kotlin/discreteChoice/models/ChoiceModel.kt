@@ -31,10 +31,16 @@ abstract class ChoiceAlternative<R : Any> {
     }
 }
 
+/**
+ * Functional interface, that contains a function `filter`, which in some way manipulates a set of choices `Set<R>`.
+ */
 fun interface ChoiceFilter<R> {
     fun filter(choices: Set<R>): Set<R>
 }
 
+/**
+ * Choice-filter, that is the identity function.
+ */
 fun <R> noFilter() = ChoiceFilter<R> { choices -> choices }
 
 /**
@@ -46,6 +52,13 @@ fun <R> noFilter() = ChoiceFilter<R> { choices -> choices }
 interface ChoiceModel<A, R> {
     val name: String
     val choiceFilter: ChoiceFilter<A>
+
+    /**
+     * @param random some random generator.
+     * @param choices the set of alternatives one is chosen from.
+     * @return one, or multiple `A`. Could be something else, since `R` is generic, but the idea is that this function
+     * does what you expect it to do. Return a selection of the choices.
+     */
     fun select(choices: Set<A>, random: Random): R
 }
 
@@ -54,6 +67,7 @@ interface ChoiceModel<A, R> {
  * @param alternatives the set of objects to choose from. These are filtered, with the filter of the ChoiceModel, and
  * then, out of the leftover alternatives, chosen from.
  * @param random A function providing Random. Passed to the select function.
+ * @return `R`... whatever is selected after filtering the alternatives.
  */
 fun <A, R : Any> ChoiceModel<A, R>.filterAndSelect(
     alternatives: Set<A>,
@@ -72,6 +86,9 @@ fun <A, R : Any> ChoiceModel<A, R>.filterAndSelect(
 fun <A, R : Any> ChoiceModel<A, R>.fixed(choices: Set<R>): FixedChoicesModel<A, R> where A : ChoiceAlternative<R> =
     EnumeratedChoiceModel<R, A>(this, choices)
 
+/**
+ * @return another choice-Model, based on this one, but with `newFilter` piped before all existing filters.
+ */
 fun <A, R : Any> ChoiceModel<A, R>.addFilter(
     newFilter: ChoiceFilter<A>
 ): ChoiceModel<A, R> where A : ChoiceAlternative<R> = ChoiceModelDecorator<A, R>(
@@ -88,6 +105,9 @@ interface FixedChoicesModel<A, R : Any> : ChoiceModel<A, R> where A : ChoiceAlte
     }
 }
 
+/**
+ * @return another FixedChoiceModel, based on this one, but with `newFilter` piped before all existing filters.
+ */
 fun <A, R : Any> FixedChoicesModel<A, R>.addFilter(
     newFilter: ChoiceFilter<A>
 ): FixedChoicesModel<A, R> where A : ChoiceAlternative<R> = FixedChoicesModelDecorator<A, R>(
@@ -139,6 +159,10 @@ data class EnumeratedChoiceModel<R : Any, A : ChoiceAlternative<R>>(
     override val choices: Set<R>,
 ) : ChoiceModel<A, R> by choiceModel, FixedChoicesModel<A, R>
 
+
+/**
+ * ChoiceModel which selects one of the `choices` with equal probability.
+ */
 class RandomChoiceModel<A, R : Any>(
     override val name: String,
     override val choices: Set<R>,
