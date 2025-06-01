@@ -68,17 +68,28 @@ data class DiscreteChoiceModel<R : Any, A, P>(
     val parameters: P,
 ) : ChoiceModel<A, R> where A : ChoiceAlternative<R> {
 
+    /**
+     * @return whatever the `selectionFunction` returns when given the probabilities of all choices and the random
+     * generator.
+     */
     override fun select(choices: Set<A>, random: Random): R =
         selectionFunction.calculateSelection(probabilities(choices), random).choice
 
+    /**
+     * @return a map with each alternative mapped to its probability.
+     */
     fun probabilities(alternatives: Set<A>) =
         distributionFunction.calculateProbabilities(utilities(alternatives), parameters)
 
+    /**
+     * @return a map with each alternative mapped to its utility value.
+     */
     fun utilities(alternatives: Set<A>): Map<A, Double> =
         alternatives.associateWithNotNull { utility(it) }
 
     /**
-     * Assigns the given alternative a concrete utility value given the `parameters`
+     * Assigns the given alternative a concrete utility value given the `parameters`.
+     * @return the double utility value.
      */
     fun utility(alternative: A): Double = requireNotNull(
         utilityAssignment[alternative]?.calculateUtility(alternative, parameters)
@@ -87,9 +98,17 @@ data class DiscreteChoiceModel<R : Any, A, P>(
             "No utility function was designed for ${alternative.choice}"
     }
 
+    /**
+     * @param choices the alternatives the new ChoiceModel works on.
+     * @return an EnumeratedDiscreteChoiceModel, which behaves like this model, but works on the given `choices`.
+     */
     fun with(choices: Set<R>) = EnumeratedDiscreteChoiceModel<R, A, P>(this, choices)
 }
 
+/**
+ * A ChoiceModel based on another DiscreteChoiceModel (`model`). Behaves like the `model` if the `model` had the
+ * `choices` as its alternatives.
+ */
 data class EnumeratedDiscreteChoiceModel<R : Any, A, P>(
     val model: DiscreteChoiceModel<R, A, P>,
     override val choices: Set<R>,
