@@ -3,8 +3,8 @@ package discreteChoice.models
 import kotlin.random.Random
 
 /**
- * Wrapper for `ChoiceAlternative` interface, but defines a `with` function, which should transform choosable objects
- * `X` to `ChoiceAlternative` objects. (not sure).
+ * Wrapper for `ChoiceAlternative` interface, aditionally defines a `with` function, which should transform choosable
+ * objects`X` to `ChoiceAlternative` objects. (not sure).
  * Also adds a value which contains a Random Object. Likely to be later used to select something. Useful for setting a
  * seed.
  */
@@ -15,7 +15,7 @@ interface ChoiceSituation<A, X : Any> where A : ChoiceAlternative<X> {
 }
 
 /**
- * A choice situation may contain additional appended information but is basically only a wrapper for [X].
+ * A choice situation may contain additional appended information but is basically only a wrapper for [R].
  * Thus the equals and hash implementaion of that type can be used for mapping to a certain utility function.
  */
 abstract class ChoiceAlternative<R : Any> {
@@ -83,6 +83,11 @@ fun <A, R : Any> ChoiceModel<A, R>.filterAndSelect(
     return select(filtered, random)
 }
 
+/**
+ * Convenience function, which constructs `FixedChoicesModel` out of any `ChoiceModel`.
+ * @param choices the choices the returned FixedChoicesModel has.
+ * @return a `FixedChoicesModel` with the given `choices` as its choices.
+ */
 fun <A, R : Any> ChoiceModel<A, R>.fixed(choices: Set<R>): FixedChoicesModel<A, R> where A : ChoiceAlternative<R> =
     EnumeratedChoiceModel<R, A>(this, choices)
 
@@ -96,6 +101,9 @@ fun <A, R : Any> ChoiceModel<A, R>.addFilter(
     newFilter = ChoiceFilter { choices -> this.choiceFilter.filter(newFilter.filter(choices)) }
 )
 
+/**
+ * Interface of a ChoiceModel which has a non-changeable set of choices.
+ */
 interface FixedChoicesModel<A, R : Any> : ChoiceModel<A, R> where A : ChoiceAlternative<R> {
     val choices: Set<R>
 
