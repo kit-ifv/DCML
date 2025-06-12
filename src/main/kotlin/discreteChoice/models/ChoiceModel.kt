@@ -3,8 +3,8 @@ package discreteChoice.models
 import kotlin.random.Random
 
 /**
- * Wrapper for `ChoiceAlternative` interface, aditionally defines a `with` function, which should transform choosable
- * objects`X` to `ChoiceAlternative` objects. (not sure).
+ * Object containing useful stuff for  additionally defines a `with` function, which should transform choosable
+ * objects`X` to `ChoiceAlternative` objects.
  * Also adds a value which contains a Random Object. Likely to be later used to select something. Useful for setting a
  * seed.
  */
@@ -17,6 +17,7 @@ interface ChoiceSituation<A, X : Any> where A : ChoiceAlternative<X> {
 /**
  * A choice situation may contain additional appended information but is basically only a wrapper for [R].
  * Thus the equals and hash implementaion of that type can be used for mapping to a certain utility function.
+ * @property choice the wrapped object.
  */
 abstract class ChoiceAlternative<R : Any> {
     abstract val choice: R
@@ -63,7 +64,8 @@ interface ChoiceModel<A, R> {
 }
 
 /**
- * Extension function of a ChoiceModel. Applies the `choiceFilter` of the ChoiceModel on the given `alternatives`
+ * Extension function of a ChoiceModel. Applies the `choiceFilter` of the ChoiceModel on the given `alternatives`.
+ * Side effect free.
  * @param alternatives the set of objects to choose from. These are filtered, with the filter of the ChoiceModel, and
  * then, out of the leftover alternatives, chosen from.
  * @param random A function providing Random. Passed to the select function.
@@ -102,11 +104,16 @@ fun <A, R : Any> ChoiceModel<A, R>.addFilter(
 )
 
 /**
- * Interface of a ChoiceModel which has a non-changeable set of choices.
+ * Interface of a ChoiceModel which has a non-changeable set of choices. Additionally, has `filterAndSelect` function,
+ * applying the choiceFilter to the alternatives before selecting from them.
+ *
  */
 interface FixedChoicesModel<A, R : Any> : ChoiceModel<A, R> where A : ChoiceAlternative<R> {
     val choices: Set<R>
 
+    /**
+     * Applies the
+     */
     fun filterAndSelect(situation: ChoiceSituation<A, R>): R {
         val alternatives = choices.map { situation.with(it) }.toSet()
         return filterAndSelect(alternatives, situation.random)
