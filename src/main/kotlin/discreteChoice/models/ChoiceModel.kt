@@ -3,12 +3,13 @@ package discreteChoice.models
 import kotlin.random.Random
 
 /**
- * Object containing useful stuff for  additionally defines a `with` function, which should transform choosable
- * objects`X` to `ChoiceAlternative` objects.
- * Also adds a value which contains a Random Object. Likely to be later used to select something. Useful for setting a
- * seed.
+ * Container object interface defining a random seed value and a `with` function. The `with` function, wraps
+ * choosable objects of any type into ChoiceAlternatives objects.
  */
 interface ChoiceSituation<A, X : Any> where A : ChoiceAlternative<X> {
+    /**
+     * Wrapping function. Wraps a choosable object `choice` into `ChoiceAlternative<X>`.
+     */
     fun with(choice: X): A
 
     val random: Random
@@ -16,7 +17,7 @@ interface ChoiceSituation<A, X : Any> where A : ChoiceAlternative<X> {
 
 /**
  * A choice situation may contain additional appended information but is basically only a wrapper for [R].
- * Thus the equals and hash implementaion of that type can be used for mapping to a certain utility function.
+ * Thus, the equals and hash implementation of that type can be used for mapping to a certain utility function.
  * @property choice the wrapped object.
  */
 abstract class ChoiceAlternative<R : Any> {
@@ -112,7 +113,8 @@ interface FixedChoicesModel<A, R : Any> : ChoiceModel<A, R> where A : ChoiceAlte
     val choices: Set<R>
 
     /**
-     * Applies the
+     * Applies the choice filter onto the choices before selecting from the choices.
+     * @param situation Seed and
      */
     fun filterAndSelect(situation: ChoiceSituation<A, R>): R {
         val alternatives = choices.map { situation.with(it) }.toSet()
