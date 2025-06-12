@@ -1,10 +1,8 @@
-package discreteChoice.discreteChoice.distribution
+package discreteChoice.distribution
 
-import discreteChoice.distribution.MultinomialLogit
-import org.junit.jupiter.api.Assertions.*
+
 import org.junit.jupiter.api.Test
 import kotlin.assert
-import kotlin.math.exp
 
 class MultinomialLogitTest {
 

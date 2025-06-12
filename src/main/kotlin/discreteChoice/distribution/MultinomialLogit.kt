@@ -18,21 +18,27 @@ import kotlin.math.exp
 class MultinomialLogit<X, P> : DistributionFunction<X, P> {
 
     override fun calculateProbabilities(utilities: Map<X, Double>, parameters: P): Map<X, Double> {
-        val currentExp = utilities.entries.associate {
+        val expUtilities = utilities.entries.associate {
             it.key to exp(it.value)
         }
-        val countInfinity = currentExp.count { it.value == Double.POSITIVE_INFINITY }
-        if (countInfinity > 0) {
-            val equalPos = currentExp.mapValues {
-                if (it.value == Double.POSITIVE_INFINITY) 1.0 / countInfinity else 0.0
-            }
-            return equalPos
+        if (expUtilities.containsInfinity()) {
+            return expUtilities.mapInfinityToEqualDistribution()
         }
-        val sum = currentExp.values.sum()
+        val sum = expUtilities.values.sum()
 
         if(sum == 0.0) {
             return utilities.mapValues { 1.0 / utilities.size }
         }
-        return currentExp.mapValues { it.value / sum }
+        return expUtilities.mapValues { it.value / sum }
+    }
+
+    private fun Map<X, Double>.containsInfinity(): Boolean {
+        return any { it.value == Double.POSITIVE_INFINITY }
+    }
+
+    private fun Map<X, Double>.mapInfinityToEqualDistribution(): Map<X, Double> {
+        val numberOfInfinity = count { it.value == Double.POSITIVE_INFINITY }
+        val equalProb = 1.0 / numberOfInfinity
+        return this.mapValues { if (it.value == Double.POSITIVE_INFINITY) equalProb  else 0.0 }
     }
 }
