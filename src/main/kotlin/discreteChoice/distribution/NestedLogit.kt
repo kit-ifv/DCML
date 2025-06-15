@@ -98,7 +98,6 @@ class NestStructure<PARAMS> {
         var probability: Double = 0.0
         abstract val name: String
         open fun calculateProbability(parameters: PARAMS) {
-            // println(this)
         }
 
         fun treePrint(): Unit = printAsTree(
@@ -171,14 +170,12 @@ class NestStructure<PARAMS> {
                 error("Never should a calculate Utility be called when the childs are irrelevant")
             }
             maxUtility = relevantChilds.maxOf { ln(it.extractAlphaParameter(parameters)) + it.utility }
-            // println(relevantChilds.joinToString(prefix="calcMax = ") { "${it.name} -> ${ln(it.extractAlphaParameter(parameters)) + it.utility}" })
             val x = relevantChilds
                 .map { ln(it.extractAlphaParameter(parameters)) + it.utility }
                 .sumOf { exp((it - maxUtility) / lambda) }
 
             utility = maxUtility + lambda * ln(x)
             sum = x
-            // println("calcUtility $name: max=$maxUtility x=$x util=$utility sum=$sum")
             return parent
         }
 
