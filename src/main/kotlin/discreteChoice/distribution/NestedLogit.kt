@@ -12,20 +12,26 @@ class NestedLogit<R : Any, A, P>(
     private val structure: NestStructureData<R, A, P>,
 ) : DistributionFunction<A, P> where A : ChoiceAlternative<R> {
 
+    /**
+     * @param utilities Should only map choices, which are present in the `structure` of this NestedLogit. Will fail
+     * if other options are mapped.
+     */
     override fun calculateProbabilities(utilities: Map<A, Double>, parameters: P): Map<A, Double> {
         val (root, leafs) = structure
 
         return synchronized(root) {
             root.reset() // Reset the calculation tree to reset the relevantForCalculation flags.
-            val relevantLeaves = utilities.entries.map {
+            val relevantLeafs = utilities.entries.map {
                 AssociatedSituation(
                     it.key,
                     leafs[it.key.choice]!!,
                     it.value
                 )
             }
-            runQueue(relevantLeaves, parameters)
-            relevantLeaves.associate { it.sit to it.probability }
+            runQueue(relevantLeafs, parameters) // calculate probabilities of entire graph
+            // (only the relevant ones)
+            relevantLeafs.associate { it.sit to it.probability } // extract the probabilities of the options out of the
+            // leafs.
         }
     }
 }
@@ -40,23 +46,31 @@ fun interface NestedStructureDataBuilder<R : Any, A, P> where A : ChoiceAlternat
 }
 
 // TODO can we implement this stateless?
+/**
+ * Calculates the probabilities of all options, given the leaves to include (the `situations`).
+ * @param situations basically a list of leafs of the structure, which should be included in calculating the
+ * probability values of all nodes of the underlying structure.
+ */
 fun <A, P> runQueue(
     situations: List<AssociatedSituation<A, P>>,
     parameters: P
 ) {
     val nextNests = situations.mapNotNull { it.initializeUtility() }
+    // sort all nodes to increasing level.
     val queue = PriorityQueue<NestStructure<P>.Nest> { a, b -> a.level - b.level }
 
     lateinit var lastElement: NestStructure<P>.Nest
     queue.addAll(nextNests)
+    // calculate all utilities bottom up. So lowest levels first, then higher ones.
     while (queue.isNotEmpty()) {
         val n = queue.poll()
         lastElement = n
         val parent = n.calculateUtility(parameters)
         parent?.let { queue.add(it) }
     }
-    lastElement.probability = 1.0
-    lastElement.calculateProbability(parameters)
+    lastElement.probability = 1.0 // top most node has 1.0 probability as this is all the probability which should be
+    // distributed across the options.
+    lastElement.calculateProbability(parameters) // assign probability values to all
 }
 
 /**
@@ -71,7 +85,7 @@ class AssociatedSituation<A, P>(
     val probability get() = leaf.probability
 
     /**
-     * set the utility of the leaf to the already calculated utility and set the calculation flags.
+     * Set the utility of the leaf to this.utility and marks it as "relevantForTheCalculation".
      */
     fun initializeUtility(): NestStructure<P>.Nest? {
         return leaf.initializeUtility(utility)
@@ -84,13 +98,21 @@ class NestStructure<P> {
         leafs.groupBy { it.parent }
     }
 
+    /**
+     * A generic Node of the structure graph. Defines all values and functions any Node in a NestStructure needs to
+     * implement.
+     */
     abstract inner class Node {
+        abstract val extractAlphaParameter: (P) -> Double
         /**
          * Level represents the depth of the alternative in the Nest Structure, lower level nests need to
          * be calculated for their utility first.
          */
-        abstract val extractAlphaParameter: (P) -> Double
         abstract val level: Int
+
+        /**
+         * If set to false, this node will get ignored in utility and probability calculations.
+         */
         var relevantForCalculation = false
         abstract var parent: Nest?
         abstract fun reset()
@@ -110,6 +132,9 @@ class NestStructure<P> {
         abstract fun leafs(): List<Leaf>
     }
 
+    /**
+     * A non-abstract Node __without__ children.
+     */
     inner class Leaf(
         override val extractAlphaParameter: (P) -> Double = {
             1.0
@@ -123,6 +148,9 @@ class NestStructure<P> {
             relevantForCalculation = false
         }
 
+        /**
+         * @return the Parent of this Leaf.
+         */
         fun initializeUtility(utility: Double): Nest? {
             this.utility = utility
             relevantForCalculation = true
@@ -138,6 +166,19 @@ class NestStructure<P> {
         override fun leafs(): List<NestStructure<P>.Leaf> = listOf(this)
     }
 
+    /**
+     * A non-abstract Node __with__ children.
+     * @param extractLambdaParameter provider function for tuning parameter of the softmax. Lambda defines how much
+     * probability should be given to the highest utility and how much to lower utility values.
+     *
+     * lambda = 1 is the normal softmax.
+     *
+     * lambda > 1 Means more even distribution of probability.
+     *
+     * lambda < 1 leads to more probability given to the option with the highest utility value.
+     *
+     * __Lambda has to always be > 0.__
+     */
     inner class Nest(
         private val childNodes: Collection<Node>,
         override val name: String = hashCode().toString(),
@@ -153,16 +194,28 @@ class NestStructure<P> {
          * from a potential infinity to a 0.0 which is better handleable.
          */
         private var maxUtility = 0.0
+
+        /**
+         * Sum of all exp(utility) of the utility of all children.
+         */
         private var sum = 0.0
 
         override val extractAlphaParameter: (P) -> Double = {
             1.0
         } // Alpha parameter is only relevant for leaves. and thus not in the constructor
+
+        /**
+         * Sets `relevantForCalculation` to false. And calls `reset` on all children.
+         */
         override fun reset() {
             relevantForCalculation = false
             childNodes.forEach { it.reset() }
         }
 
+        /**
+         * Calculates the utility of this node. Sets `this.sum` and `this.maxUtility`
+         * @return the parent of this node.
+         */
         fun calculateUtility(parameters: P): Nest? {
             val lambda = extractLambdaParameter(parameters)
             val relevantChilds = childNodes.filter { it.relevantForCalculation }
@@ -179,6 +232,13 @@ class NestStructure<P> {
             return parent
         }
 
+        /**
+         * Assigns probabilities to __all__ children of this node. (All reachable nodes get utilities assigned)
+         *
+         * All probabilities of the (relevantForCalculation) children will sum up to `this.probability`.
+         *
+         * Probability of the children get distributed using the (lambda tuned) softmax of their utility values.
+         */
         override fun calculateProbability(parameters: P) {
             val lambda = extractLambdaParameter(parameters)
             val relevantChilds = childNodes.filter { it.relevantForCalculation }
