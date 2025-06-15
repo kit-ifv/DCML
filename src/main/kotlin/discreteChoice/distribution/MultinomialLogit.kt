@@ -4,8 +4,11 @@ import discreteChoice.DistributionFunction
 import kotlin.math.exp
 
 /**
- * Classic soft-max approach to calculating probabilities out of utility-values.
- * Probability of option p_i := e^u_i / {sum of all utilities  e^u_k}
+ * A Distribution Function using a soft-max approach to calculating probabilities out of utility-values.
+ * Probability of option p_i := e^u_i / {sum of all utilities  e^u_k
+ *
+ * __To have no unexpected behaviour, ensure that none of the utility values are greater than 710 and not all are
+ * smaller than -744.__
  *
  * __Edge cases:__
  *
