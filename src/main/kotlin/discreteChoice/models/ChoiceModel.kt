@@ -95,7 +95,7 @@ fun <A, R : Any> ChoiceModel<A, R>.fixed(choices: Set<R>): FixedChoicesModel<A, 
     EnumeratedChoiceModel<R, A>(this, choices)
 
 /**
- * @return another choice-Model, based on this one, but with `newFilter` piped before all existing filters.
+ * @return another ChoiceModel, based on this one, but with `newFilter` piped before all existing filters.
  */
 fun <A, R : Any> ChoiceModel<A, R>.addFilter(
     newFilter: ChoiceFilter<A>
@@ -113,8 +113,8 @@ interface FixedChoicesModel<A, R : Any> : ChoiceModel<A, R> where A : ChoiceAlte
     val choices: Set<R>
 
     /**
-     * Applies the choice filter onto the choices before selecting from the choices.
-     * @param situation Seed and
+     * Applies the choice filter onto the choices before selecting from these filtered choices.
+     * @param situation Object holding random-seed and wrapping function for options of type A.
      */
     fun filterAndSelect(situation: ChoiceSituation<A, R>): R {
         val alternatives = choices.map { situation.with(it) }.toSet()
@@ -132,6 +132,10 @@ fun <A, R : Any> FixedChoicesModel<A, R>.addFilter(
     newFilter = ChoiceFilter { choices -> this.choiceFilter.filter(newFilter.filter(choices)) }
 )
 
+/**
+ * Decorator class providing the option to overwrite the getter for name and choiceFilter of a ChoiceModel.
+ * The selection of choices is done by the `delegate`.
+ */
 open class ChoiceModelDecorator<A, R : Any>(
     protected open val delegate: ChoiceModel<A, R>,
     private val newName: String? = null,
@@ -147,6 +151,10 @@ open class ChoiceModelDecorator<A, R : Any>(
     override fun select(choices: Set<A>, random: Random): R = delegate.select(choices, random)
 }
 
+/**
+ * Decorator for a FixedChoicesModel (`delegate`). Provides the option to define a new set of choices (and name and
+ * filter).
+ */
 class FixedChoicesModelDecorator<A, R : Any>(
     protected override val delegate: FixedChoicesModel<A, R>,
     newName: String? = null,
@@ -158,6 +166,10 @@ class FixedChoicesModelDecorator<A, R : Any>(
         get() = newChoices ?: delegate.choices
 }
 
+/**
+ * A ChoiceModel which combines the original choiceFilter of the `choiceModel` with `newFilter`. Pipes `newFilter`
+ * before the existing one.
+ */
 data class FilterChoicesWrapper<A, R>(
     private val choiceModel: ChoiceModel<A, R>,
     private val newFilter: ChoiceFilter<A>,
@@ -171,6 +183,9 @@ data class FilterChoicesWrapper<A, R>(
         }
 }
 
+/**
+ * A ChoiceModel based on another `FixedChoicesModel'.
+ */
 data class EnumeratedChoiceModel<R : Any, A : ChoiceAlternative<R>>(
     private val choiceModel: ChoiceModel<A, R>,
     override val choices: Set<R>,
@@ -192,6 +207,10 @@ class RandomChoiceModel<A, R : Any>(
     }
 }
 
+/**
+ * A FixedChoicesModel which sequentially traverses it's set `choices` (the one set on creation). The first option,
+ * that is present in the set of choices provided on the `select` call, gets selected.
+ */
 class FixedOrderChoiceModel<A, R : Any>( // TODO what is this used for?
     override val name: String,
     choices: Set<R>,
@@ -203,6 +222,7 @@ class FixedOrderChoiceModel<A, R : Any>( // TODO what is this used for?
         get() = secretChoices
 
     override fun select(choices: Set<A>, random: Random): R {
-        return secretChoices.first { it in choices.map { it.choice } }
+        val index = choices.map {it.choice}
+        return secretChoices.first { it in index }
     }
 }
