@@ -184,7 +184,7 @@ data class FilterChoicesWrapper<A, R>(
 }
 
 /**
- * A ChoiceModel based on another `FixedChoicesModel'.
+ * A FixedChoicesModel based on another `ChoiceModel`.
  */
 data class EnumeratedChoiceModel<R : Any, A : ChoiceAlternative<R>>(
     private val choiceModel: ChoiceModel<A, R>,
@@ -209,7 +209,7 @@ class RandomChoiceModel<A, R : Any>(
 
 /**
  * A FixedChoicesModel which sequentially traverses it's set `choices` (the one set on creation). The first option,
- * that is present in the set of choices provided on the `select` call, gets selected.
+ * that is also present in the set of choices provided on the `select` call, gets selected.
  */
 class FixedOrderChoiceModel<A, R : Any>( // TODO what is this used for?
     override val name: String,
