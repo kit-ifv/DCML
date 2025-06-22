@@ -8,13 +8,16 @@ import java.util.*
 import kotlin.math.exp
 import kotlin.math.ln
 
+/**
+ * DistributionFunction which calculates distributions
+ */
 class NestedLogit<R : Any, A, P>(
     private val structure: NestStructureData<R, A, P>,
 ) : DistributionFunction<A, P> where A : ChoiceAlternative<R> {
 
     /**
      * @param utilities Should only map choices, which are present in the `structure` of this NestedLogit. Will fail
-     * if other options are mapped.
+     * if other options are mapped. Only mapped options get included in the calculation of probabilities.
      */
     override fun calculateProbabilities(utilities: Map<A, Double>, parameters: P): Map<A, Double> {
         val (root, leafs) = structure
@@ -29,7 +32,7 @@ class NestedLogit<R : Any, A, P>(
                 )
             }
             runQueue(relevantLeafs, parameters) // calculate probabilities of entire graph
-            // (only the relevant ones)
+            // (only the relevant nodes included)
             relevantLeafs.associate { it.sit to it.probability } // extract the probabilities of the options out of the
             // leafs.
         }
@@ -56,7 +59,7 @@ fun <A, P> runQueue(
     parameters: P
 ) {
     val nextNests = situations.mapNotNull { it.initializeUtility() }
-    // sort all nodes to increasing level.
+    // Keep nodes sorted by increasing level.
     val queue = PriorityQueue<NestStructure<P>.Nest> { a, b -> a.level - b.level }
 
     lateinit var lastElement: NestStructure<P>.Nest
@@ -65,12 +68,13 @@ fun <A, P> runQueue(
     while (queue.isNotEmpty()) {
         val n = queue.poll()
         lastElement = n
-        val parent = n.calculateUtility(parameters)
+        val parent = n.calculateUtility(parameters) // bottom up calculate the utilites of all nodes involved in this
+        // calculation.
         parent?.let { queue.add(it) }
     }
     lastElement.probability = 1.0 // top most node has 1.0 probability as this is all the probability which should be
     // distributed across the options.
-    lastElement.calculateProbability(parameters) // assign probability values to all
+    lastElement.calculateProbability(parameters) // assign probability values to all nodes of the structure.
 }
 
 /**
@@ -85,7 +89,7 @@ class AssociatedSituation<A, P>(
     val probability get() = leaf.probability
 
     /**
-     * Set the utility of the leaf to this.utility and marks it as "relevantForTheCalculation".
+     * Set the utility of the leaf to this.utility and marks it and the parent as "relevantForTheCalculation".
      */
     fun initializeUtility(): NestStructure<P>.Nest? {
         return leaf.initializeUtility(utility)
@@ -101,6 +105,8 @@ class NestStructure<P> {
     /**
      * A generic Node of the structure graph. Defines all values and functions any Node in a NestStructure needs to
      * implement.
+     * @property extractAlphaParameter Provider function for a tuning parameter of the softmax used to distribute the
+     * probabilities. The returned value will be used as a factor for the probability calculation. $\alpha  e^{u_i}$...
      */
     abstract inner class Node {
         abstract val extractAlphaParameter: (P) -> Double
@@ -149,6 +155,7 @@ class NestStructure<P> {
         }
 
         /**
+         * Set utility of this leaf and mark this leaf and this.parent as relevant for the calculation.
          * @return the Parent of this Leaf.
          */
         fun initializeUtility(utility: Double): Nest? {
@@ -213,27 +220,29 @@ class NestStructure<P> {
         }
 
         /**
-         * Calculates the utility of this node. Sets `this.sum` and `this.maxUtility`
+         * Calculates the utility of this node. Sets `this.sum`, `this.utility` and `this.maxUtility`
          * @return the parent of this node.
          */
         fun calculateUtility(parameters: P): Nest? {
             val lambda = extractLambdaParameter(parameters)
             val relevantChilds = childNodes.filter { it.relevantForCalculation }
             if (relevantChilds.isEmpty()) {
-                error("Never should a calculate Utility be called when the childs are irrelevant")
+                error("Never should a calculate Utility be called when the children are irrelevant")
             }
             maxUtility = relevantChilds.maxOf { ln(it.extractAlphaParameter(parameters)) + it.utility }
             val x = relevantChilds
                 .map { ln(it.extractAlphaParameter(parameters)) + it.utility }
                 .sumOf { exp((it - maxUtility) / lambda) }
 
-            utility = maxUtility + lambda * ln(x)
+            utility = maxUtility + lambda * ln(x) // this utility is the sum of the utility of the children. The
+            // maxUtility and lambda get canceled out in later calculations.
             sum = x
             return parent
         }
 
         /**
-         * Assigns probabilities to __all__ children of this node. (All reachable nodes get utilities assigned)
+         * Assigns probabilities to __all__ children of this node. (The probability of this node will get distributed
+         * on the children of this node).
          *
          * All probabilities of the (relevantForCalculation) children will sum up to `this.probability`.
          *
