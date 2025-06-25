@@ -1,8 +1,5 @@
-import discreteChoice.DiscreteChoiceModel
 import discreteChoice.models.ChoiceAlternative
-import discreteChoice.structure.CrossNestedStructure
 import discreteChoice.structure.DiscreteStructure
-import discreteChoice.utility.crossNestedLogit
 import discreteChoice.utility.multinomialLogit
 import kotlin.random.Random
 import kotlin.system.measureTimeMillis
@@ -15,19 +12,19 @@ private class ExampleChoice(override val choice: Int) : ChoiceAlternative<Int>()
 
 }
 
+/**
+ * This simple script can be used to run a benchmark to test the efficiecy of discrete choice models.
+ */
 fun main() {
     val optionSize = 10000
     val iterations = 10000
     val random = Random(1L)
 
-    val randomUtilityFunction: (alternative: ExampleChoice, parameterObject: Unit) -> Double = { _, _ ->
-        random.nextDouble(-10.0, 10.0)
-    }
-
-
     val discreteChoiceModel = DiscreteStructure<Int, ExampleChoice, Unit> {
         for(i in 1..optionSize) {
-            addUtilityFunctionByIdentifier(i, randomUtilityFunction)
+            option(i) {
+                random.nextDouble(-10.0, 10.0)
+            }
         }
 
     }.multinomialLogit("Benchmark model").build(Unit).model
