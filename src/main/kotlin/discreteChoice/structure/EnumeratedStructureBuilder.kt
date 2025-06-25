@@ -76,17 +76,17 @@ interface EnumeratedStructureBuilder<R : Any, A, P> where A : ChoiceAlternative<
  * with the corresponding type T from the parameter object. Note that at this point no check can occur whether the index
  * actually exists in the parameter object, as this object is unknown at the creation time of the structure.
  */
-fun <T, R: Any, A: ChoiceAlternative<R>, P: List<T>> EnumeratedStructureBuilder<R, A, P>.bulk(options: Collection<R>, utilityFunction: T.(A) -> Double) {
+fun <T, R: Any, A: ChoiceAlternative<R>, P: List<T>> EnumeratedStructureBuilder<R, A, P>.bulkList(options: Collection<R>, utilityFunction: T.(A) -> Double) {
     options.withIndex().forEach { (index, value) ->
         option(value, parameters = { this[index] } , utilityFunction)
     }
 }
 
 /**
- * Similarly to [bulk] if the parameter object implements the map interface we can trivialize the initialization by simply
+ * Similarly to [bulkList] if the parameter object implements the map interface we can trivialize the initialization by simply
  * redirecting the check for the correct parameter implementation by inserting the element R
  */
-fun <T, R: Any, A: ChoiceAlternative<R>, P: Map<R, T>> EnumeratedStructureBuilder<R, A, P>.bulk(options: Collection<R>, utilityFunction: T.(A) -> Double) {
+fun <T, R: Any, A: ChoiceAlternative<R>, P: Map<R, T>> EnumeratedStructureBuilder<R, A, P>.bulkMap(options: Collection<R>, utilityFunction: T.(A) -> Double) {
     options.forEach { currentOption ->
         option(currentOption, parameters = { this.getValue(currentOption) } , utilityFunction)
     }

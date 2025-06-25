@@ -66,4 +66,5 @@ class MultinomialLogitTest {
         assert(0.001 > probabilities[2]!!)
         assert(0.001 > probabilities[3]!!)
     }
+
 }

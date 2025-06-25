@@ -89,14 +89,17 @@ data class DiscreteChoiceModel<R : Any, A, P>(
      * @param random The source of randomness used in the selection process.
      * @return The selected alternative after applying the modified utilities.
      */
-    fun selectInjected(choices: Map<A, (Double) -> Double>, random: Random) :R {
-        val modifiedUtilities = utilities(choices.keys).mapValues { (choice, utility) ->
-            val injection = choices[choice] ?: {it}
+    fun selectInjected(choices: Set<A>, injections: Map<R, (Double) -> Double>, random: Random) :R {
+        val modifiedUtilities = utilities(choices).mapValues { (alternative, utility) ->
+            val injection = injections[alternative.choice] ?: {it}
             injection(utility)
         }
         return selectionFunction.calculateSelection(probabilities(modifiedUtilities), random).choice
 
     }
+
+    fun selectInjected(choices: Set<R>, injections: Map<R, (Double) -> Double>, random: Random, converter: (R) ->A) :R=
+        selectInjected(choices.map { converter(it) }.toSet(), injections, random)
     /**
      * @return a map with each alternative mapped to its probability.
      */

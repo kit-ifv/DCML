@@ -62,6 +62,8 @@ interface ChoiceModel<A, R> {
      * does what you expect it to do. Return a selection of the choices.
      */
     fun select(choices: Set<A>, random: Random): R
+
+    fun select(choices: Set<R>, random: Random, converter: (R) -> A): R = select(choices.map { converter(it) }.toSet(), random)
 }
 
 /**
