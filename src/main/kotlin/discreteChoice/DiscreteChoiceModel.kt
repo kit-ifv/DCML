@@ -76,11 +76,35 @@ data class DiscreteChoiceModel<R : Any, A, P>(
         selectionFunction.calculateSelection(probabilities(choices), random).choice
 
     /**
+     * Selects an alternative by injecting custom modifications into the utility calculation
+     * for each choice prior to selection.
+     *
+     * This method allows external control over the utility values by providing a map of
+     * utility-modifying functions (i.e., injections) per choice. Each function transforms
+     * the original utility score calculated for its corresponding choice.
+     *
+     * @param choices A map from each available alternative to a function that modifies
+     * its original utility value. If a choice is not included in the map, the identity
+     * function is used by default (i.e., no modification).
+     * @param random The source of randomness used in the selection process.
+     * @return The selected alternative after applying the modified utilities.
+     */
+    fun selectInjected(choices: Map<A, (Double) -> Double>, random: Random) :R {
+        val modifiedUtilities = utilities(choices.keys).mapValues { (choice, utility) ->
+            val injection = choices[choice] ?: {it}
+            injection(utility)
+        }
+        return selectionFunction.calculateSelection(probabilities(modifiedUtilities), random).choice
+
+    }
+    /**
      * @return a map with each alternative mapped to its probability.
      */
-    fun probabilities(alternatives: Set<A>) =
-        distributionFunction.calculateProbabilities(utilities(alternatives), parameters)
+    fun probabilities(alternatives: Set<A>) = probabilities(utilities(alternatives))
 
+
+    fun probabilities(utilities: Map<A, Double>) =
+        distributionFunction.calculateProbabilities(utilities, parameters)
     /**
      * @return a map with each alternative mapped to its utility value.
      */
