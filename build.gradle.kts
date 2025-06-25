@@ -20,7 +20,8 @@ tasks.test {
 kotlin {
     jvmToolchain(21)
 }
-version = project.findProperty("version")?.toString() ?: "1.0.0"
+version = "1.0.1"
+//version = project.findProperty("version")?.toString() ?: "1.0.0"
 publishing {
     publications {
         register("mavenData", MavenPublication::class) {

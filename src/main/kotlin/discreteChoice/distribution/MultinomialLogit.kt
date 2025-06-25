@@ -18,9 +18,25 @@ import kotlin.math.exp
  * If utilities are all  <=-745 each option gets the same probability. (Because exp(-745) == 0.0 leading division with
  * zero)
  */
-class MultinomialLogit<X, P> : DistributionFunction<X, P> {
+class MultinomialLogit<X, P> : DistributionFunction<X, P>, ParameterlessDistribution<X> {
 
     override fun calculateProbabilities(utilities: Map<X, Double>, parameters: P): Map<X, Double> {
+        return calculateProbabilities(utilities)
+    }
+
+
+
+    private fun Map<X, Double>.containsInfinity(): Boolean {
+        return any { it.value == Double.POSITIVE_INFINITY }
+    }
+
+    private fun Map<X, Double>.mapInfinityToEqualDistribution(): Map<X, Double> {
+        val numberOfInfinity = count { it.value == Double.POSITIVE_INFINITY }
+        val equalProb = 1.0 / numberOfInfinity
+        return this.mapValues { if (it.value == Double.POSITIVE_INFINITY) equalProb  else 0.0 }
+    }
+
+    override fun calculateProbabilities(utilities: Map<X, Double>): Map<X, Double> {
         val expUtilities = utilities.entries.associate {
             it.key to exp(it.value)
         }
@@ -33,15 +49,5 @@ class MultinomialLogit<X, P> : DistributionFunction<X, P> {
             return utilities.mapValues { 1.0 / utilities.size }
         }
         return expUtilities.mapValues { it.value / sum }
-    }
-
-    private fun Map<X, Double>.containsInfinity(): Boolean {
-        return any { it.value == Double.POSITIVE_INFINITY }
-    }
-
-    private fun Map<X, Double>.mapInfinityToEqualDistribution(): Map<X, Double> {
-        val numberOfInfinity = count { it.value == Double.POSITIVE_INFINITY }
-        val equalProb = 1.0 / numberOfInfinity
-        return this.mapValues { if (it.value == Double.POSITIVE_INFINITY) equalProb  else 0.0 }
     }
 }

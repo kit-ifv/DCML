@@ -13,7 +13,7 @@ class MultinomialLogitTest {
     fun equalnearInfinity() {
         val logit = MultinomialLogit<Int, List<Int>>();
         val utilities: Map<Int, Double> = mapOf(1 to 1.0, 2 to 709.0, 3 to 709.0)
-        val probabilities = logit.calculateProbabilities(utilities, listOf())
+        val probabilities = logit.calculateProbabilities(utilities)
 
         println(probabilities)
         assert(0.001 > probabilities[1]!!)
@@ -28,7 +28,7 @@ class MultinomialLogitTest {
     fun infinityTest() {
         val logit = MultinomialLogit<Int, List<Int>>();
         val utilities: Map<Int, Double> = mapOf(1 to 709.0, 2 to 710.0, 3 to 710.0)
-        val probabilities = logit.calculateProbabilities(utilities, listOf())
+        val probabilities = logit.calculateProbabilities(utilities)
 
         println(probabilities)
         assert(0.001 > probabilities[1]!!)
@@ -44,7 +44,7 @@ class MultinomialLogitTest {
     fun zeroDivision() {
         val logit = MultinomialLogit<Int, List<Int>>();
         val utilities: Map<Int, Double> = mapOf(1 to -746.0, 2 to -7046.0, 3 to -746.0)
-        val probabilities = logit.calculateProbabilities(utilities, listOf())
+        val probabilities = logit.calculateProbabilities(utilities)
 
         println(probabilities)
         assert(0.33 < probabilities[1]!!)
@@ -59,7 +59,7 @@ class MultinomialLogitTest {
     fun almostZeroDivision() {
         val logit = MultinomialLogit<Int, List<Int>>();
         val utilities: Map<Int, Double> = mapOf(1 to 0.0, 2 to -744.0, 3 to -744.0)
-        val probabilities = logit.calculateProbabilities(utilities, listOf())
+        val probabilities = logit.calculateProbabilities(utilities)
 
         println(probabilities)
         assert(0.999 < probabilities[1]!!)
