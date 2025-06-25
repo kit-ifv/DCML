@@ -1,10 +1,10 @@
 plugins {
     kotlin("jvm") version "2.1.20"
     id("maven-publish")
+    id("org.jetbrains.dokka") version "2.0.0"
 }
 
 group = "edu.kit.ifv.mobitopp"
-
 
 repositories {
     mavenCentral()

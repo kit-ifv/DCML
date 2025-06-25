@@ -42,11 +42,18 @@ class CrossNestedLogit<R : Any, A, P>(
     }
 }
 
+/**
+ * The nest structure.
+ */
 data class CrossNestStructureData<R : Any, A, P>(
     val root: NestStructure<P>.Node,
     val leafs: Map<R, List<NestStructure<P>.Leaf>>,
 ) where A : ChoiceAlternative<R>
 
+
+/**
+ * Functional interface for conditional spawning of CrossNestedStructureData.
+ */
 fun interface CrossNestedStructureDataBuilder<R : Any, A, P> where A : ChoiceAlternative<R> {
     fun buildStructure(): CrossNestStructureData<R, A, P>
 }
