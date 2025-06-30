@@ -27,7 +27,7 @@ fun main() {
             }
         }
 
-    }.multinomialLogit("Benchmark model").build(Unit).model
+    }.multinomialLogit("Benchmark model").build(Unit)
     val options = (1..optionSize).map { ExampleChoice(it) }.toSet()
     val timer = measureTimeMillis {
         repeat(iterations) {

@@ -54,13 +54,14 @@ fun <K> Map<K, Double>.cumulativeSum(): List<Pair<Double, K>> {
     return cumSum.zip(keys)
 }
 
-fun Collection<Number>.cumulativeSum(): List<Double> {
-    val result = mutableListOf<Double>()
+fun Collection<Number>.cumulativeSum(): DoubleArray {
+    val result = DoubleArray(this.size)
     var sum = 0.0
-
+    var counter = 0
     for (number in this) {
         sum += number.toDouble()
-        result.add(sum)
+        result[counter] = sum
+        counter++
     }
 
     return result

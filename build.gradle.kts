@@ -20,7 +20,7 @@ tasks.test {
 kotlin {
     jvmToolchain(21)
 }
-version = "1.0.1"
+version = "1.0.3"
 //version = project.findProperty("version")?.toString() ?: "1.0.0"
 publishing {
     publications {
