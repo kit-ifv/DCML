@@ -2,7 +2,7 @@ package discreteChoice.distribution
 
 import discreteChoice.DistributionFunction
 import discreteChoice.models.ChoiceAlternative
-import utils.collections.printAsTree
+import discreteChoice.utility.printAsTree
 
 import java.util.*
 import kotlin.math.exp
