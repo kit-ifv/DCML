@@ -1,6 +1,4 @@
-package utils.collections
-
-import discreteChoice.utility.indentSubsequentLines
+package discreteChoice.utility
 
 /**
  * Print the given treelike structure with pretty indentation on the console.

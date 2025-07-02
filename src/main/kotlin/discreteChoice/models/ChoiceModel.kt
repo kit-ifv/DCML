@@ -77,7 +77,7 @@ interface ChoiceModel<A, R> {
 fun <A, R : Any> ChoiceModel<A, R>.filterAndSelect(
     alternatives: Set<A>,
     random: Random
-): R where A : ChoiceAlternative<R> {
+): R {
     val filtered = choiceFilter.filter(alternatives).toSet()
 
     require(filtered.isNotEmpty()) {
@@ -101,7 +101,7 @@ fun <A, R : Any> ChoiceModel<A, R>.fixed(choices: Set<R>): FixedChoicesModel<A, 
  */
 fun <A, R : Any> ChoiceModel<A, R>.addFilter(
     newFilter: ChoiceFilter<A>
-): ChoiceModel<A, R> where A : ChoiceAlternative<R> = ChoiceModelDecorator<A, R>(
+): ChoiceModel<A, R> = ChoiceModelDecorator<A, R>(
     delegate = this,
     newFilter = ChoiceFilter { choices -> this.choiceFilter.filter(newFilter.filter(choices)) }
 )
@@ -142,13 +142,26 @@ open class ChoiceModelDecorator<A, R : Any>(
     protected open val delegate: ChoiceModel<A, R>,
     private val newName: String? = null,
     private val newFilter: ChoiceFilter<A>? = null,
-) : ChoiceModel<A, R> where A : ChoiceAlternative<R> {
+    private val combineFilters: Boolean = false
+) : ChoiceModel<A, R> {
+
+    private val combinedFilter: ChoiceFilter<A>? by lazy {
+        takeIf { combineFilters }?.let {
+            newFilter?.let {
+                ChoiceFilter { choices ->
+                    delegate.choiceFilter.filter(
+                        newFilter.filter(choices)
+                    )
+                }
+            }
+        }
+    }
 
     override val name: String
         get() = newName ?: delegate.name
 
     override val choiceFilter: ChoiceFilter<A>
-        get() = newFilter ?: delegate.choiceFilter
+        get() = combinedFilter ?: newFilter ?: delegate.choiceFilter
 
     override fun select(choices: Set<A>, random: Random): R = delegate.select(choices, random)
 }
@@ -161,28 +174,14 @@ class FixedChoicesModelDecorator<A, R : Any>(
     protected override val delegate: FixedChoicesModel<A, R>,
     newName: String? = null,
     newFilter: ChoiceFilter<A>? = null,
+    combineFilters: Boolean = false,
     private val newChoices: Set<R>? = null,
-) : ChoiceModelDecorator<A, R>(delegate, newName, newFilter), FixedChoicesModel<A, R> where A : ChoiceAlternative<R> {
+) : ChoiceModelDecorator<A, R>(
+    delegate, newName, newFilter, combineFilters
+), FixedChoicesModel<A, R> where A : ChoiceAlternative<R> {
 
     override val choices: Set<R>
         get() = newChoices ?: delegate.choices
-}
-
-/**
- * A ChoiceModel which combines the original choiceFilter of the `choiceModel` with `newFilter`. Pipes `newFilter`
- * before the existing one.
- */
-data class FilterChoicesWrapper<A, R>(
-    private val choiceModel: ChoiceModel<A, R>,
-    private val newFilter: ChoiceFilter<A>,
-) : ChoiceModel<A, R> by choiceModel {
-
-    override val choiceFilter: ChoiceFilter<A>
-        get() = ChoiceFilter { choices ->
-            choiceModel.choiceFilter.filter(
-                newFilter.filter(choices)
-            )
-        }
 }
 
 /**
