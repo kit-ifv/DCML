@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "2.1.20"
+    kotlin("jvm") version  "2.2.0"
     id("maven-publish")
     id("org.jetbrains.dokka") version "2.0.0"
 }
@@ -20,7 +20,7 @@ tasks.test {
 kotlin {
     jvmToolchain(21)
 }
-version = "1.0.1"
+version = "1.0.2"
 //version = project.findProperty("version")?.toString() ?: "1.0.0"
 publishing {
     publications {
