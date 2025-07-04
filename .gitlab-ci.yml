@@ -12,15 +12,22 @@ build:
     paths:
       - build/libs/
 
-publish:
+deploy-job:
   stage: publish
+  only:
+    - main
+  needs: [ "build" ]
+  image: amazoncorretto:21
+  resource_group: production #only one deploy job at a time
   script:
-    - ./gradlew publish -PnexusUsername=$NEXUS_USERNAME -PnexusPassword=$NEXUS_PASSWORD -Pversion=$CI_PIPELINE_IID
-  dependencies:
-    - build
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "master"'
-      when: manual
-  allow_failure: false
-  environment:
-    name: publishing
+    - echo "Publish local release $BUILD_VERSION"
+    - |
+      ./gradlew publish -PbuildVersion=$BUILD_VERSION \
+      -PdoPublish=true \
+      -PisRelease=false \
+      -PlocalUrl=$LOCAL_REPO_URL \
+      -PlocalRepoUser=$LOCAL_REPO_USERNAME \
+      -PlocalRepoPassword=$LOCAL_REPO_PASSWORD
+    - export NEW_BUILD_NUMBER=$((BUILD_NUMBER + 1))
+    - echo "Update BUILD_NUMBER to $NEW_BUILD_NUMBER"
+    - curl --request PUT --header "PRIVATE-TOKEN:$API_TOKEN" --form "value=$NEW_BUILD_NUMBER" "$GITLAB_API_URL/BUILD_NUMBER"
