@@ -2,7 +2,7 @@
 
 This project supplies a structure or framework for modeling of discrete choice situations.
 It also provides some default implementations.
-
+ 
 ## Provided Interfaces and Structures
 
 
