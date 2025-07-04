@@ -1,0 +1,210 @@
+@startuml
+' ChoiceModel.kt
+
+package ChoiceSituations {
+    abstract class ChoiceAlternative<R> {
+          +{abstract} choice: R
+          +override equals(other: Any?): Boolean
+          +override hashCode(): Int
+        }
+
+    interface ChoiceSituation<A: ChoiceAlternative, X> {
+      +with(choice: X): A
+      +random: Random
+    }
+    ChoiceSituation .right.> ChoiceAlternative: creates
+
+    note right of ChoiceAlternative
+      A choice alternative is a wrapper for a choice object
+      with equals and hashCode based on the wrapped choice.
+      A ChoiceAlternative implementation can provide context information
+      regarding the alternative such as travel time, distance or cost of a trip.
+    end note
+}
+
+package ChoiceModels {
+
+
+
+
+    interface ChoiceFilter<R> {
+      +filter(choices: Set<R>): Set<R>
+    }
+
+    interface ChoiceModel<A, R> {
+      +name: String
+      +select(choices: Set<A>, random: Random): R
+      + ext filterAndSelect(alternatives: Set<A>, random: Random): R
+      + ext <A: ChoiceAlternative> fixed(choices: Set<R>): FixedChoicesModel<A,R>
+      + ext addFilter(newFilter: ChoiceFilter<A>): ChoiceModel<A, R>
+    }
+    ChoiceModel -up-> "1" ChoiceFilter: +choiceFilter<A>
+    'ChoiceModel ..> FixedChoicesModel: creates
+    'ChoiceModel ..> EnumeratedChoiceModel: uses
+    'ChoiceModel ..> ChoiceModelDecorator: uses
+
+    interface FixedChoicesModel<A: ChoiceAlternative, R> {
+      +choices: Set<R>
+      +filterAndSelect(situation: ChoiceSituation<A, R>): R
+      + ext addFilter(newFilter: ChoiceFilter<A>): FixedChoicesModel<A, R>
+    }
+    FixedChoicesModel -up-|> ChoiceModel
+'    FixedChoicesModel .down.> ChoiceSituation: uses
+    'FixedChoicesModel ..> FixedChoicesModelDecorator: uses
+
+}
+
+ChoiceModels .up.> ChoiceSituations: uses
+Decorators -[hidden]up-> ChoiceSituations
+
+
+package Decorators {
+    ' ChoiceModel.kt > decorators
+    class ChoiceModelDecorator<A, R> {
+      -newName: String?
+      - combineFilters: Boolean = false
+      +override name: String
+      +override choiceFilter: ChoiceFilter<A>
+      +override select(choices: Set<A>, random: Random): R
+    }
+    ChoiceModelDecorator .right.|> ChoiceModel
+    ChoiceModelDecorator -right-> "1" ChoiceModel: #delegate
+    ChoiceModelDecorator -up-> "0..1" ChoiceFilter: -newFilter
+
+    class FixedChoicesModelDecorator<A, R> {
+      -newChoices: Set<R>?
+      +override choices: Set<R>
+    }
+    FixedChoicesModelDecorator .right.|> FixedChoicesModel
+    FixedChoicesModelDecorator -up-|> ChoiceModelDecorator
+    FixedChoicesModelDecorator -right-> "1" FixedChoicesModel: #override delegate
+}
+
+Decorators -[hidden]right-> ChoiceModels
+
+note top of ChoiceSituations
+packages only for structure of diagram
+end note
+
+
+' ChoiceModel.kt > Wrappers/Implementations
+'class FilterChoicesWrapper<A, R> {
+''  -choiceModel: ChoiceModel<A, R>
+''  -newFilter: ChoiceFilter<A>
+'  +override choiceFilter: ChoiceFilter<A>
+'}
+'FilterChoicesWrapper .down.|> ChoiceModel
+'FilterChoicesWrapper -down-> "1" ChoiceModel: -choiceModel
+'FilterChoicesWrapper -down-> "1" ChoiceFilter: -newFilter
+'
+
+package FixedModelImplementations {
+    class EnumeratedChoiceModel<R, A> <<dataclass>> {
+      -choiceModel: ChoiceModel<A, R>
+      +choices: Set<R>
+    }
+    EnumeratedChoiceModel .up.|> FixedChoicesModel
+
+    '
+    '
+    class RandomChoiceModel<A, R> {
+      + override select(choices: Set<A>, random: Random): R
+    }
+    RandomChoiceModel .up.|> FixedChoicesModel
+    '
+    class FixedOrderChoiceModel<A, R> {
+      -secretChoices: Set<R>
+      + override choices: Set<R>
+      + override select(choices: Set<A>, random: Random): R
+    }
+    FixedOrderChoiceModel .up.|> FixedChoicesModel
+}
+
+FixedModelImplementations -[hidden]up-> ChoiceModels
+
+
+
+
+
+
+
+
+
+
+' DiscreteChoiceModels.kt
+
+package DiscreteChoiceModels {
+
+    package DiscreteChoiceFunctionInterfaces {
+
+        interface UtilityFunction<A, P> {
+          +calculateUtility(alternative: A, parameterObject: P): Double
+        }
+
+        interface UtilityAssignment<R, A, P> {
+          +getUtilityFunctionFor(alternative: A): UtilityFunction<A, P>?
+          +operator get(alternative: A): UtilityFunction<A, P>?
+        }
+        UtilityAssignment .right.> UtilityFunction : returns
+
+        interface DistributionFunction<A, P> {
+          +calculateProbabilities(utilities: Map<A, Double>, parameters: P): Map<A, Double>
+        }
+        DistributionFunction -[hidden]down-> UtilityAssignment
+
+        interface SelectionFunction<X> {
+           +calculateSelection(options: Map<X, Double>, random: Random): X
+        }
+        SelectionFunction -[hidden]down-> UtilityAssignment
+
+    }
+
+
+    class DiscreteChoiceModel<R, A: ChoiceAlternative, P> <<dataclass>> {
+      +parameters: P
+      +override select(choices: Set<A>, random: Random): R
+      +probabilities(alternatives: Set<A>): Map<A, Double>
+      +utilities(alternatives: Set<A>): Map<A, Double>
+      +utility(alternative: A): Double
+      +with(choices: Set<R>): EnumeratedDiscreteChoiceModel<R, A, P>
+
+      +selectInjected(choices: Set<A>, injections: Map<R, (Double) -> Double>, random: Random) :R
+      +selectInjected(choices: Set<R>, injections: Map<R, (Double) -> Double>, random: Random, converter: (R) ->A) :R
+    }
+    note top of DiscreteChoiceModel
+       Implements discrete choice modeling with utility functions,
+       distribution functions, and selection mechanisms
+     end note
+
+    DiscreteChoiceModel -left-|> ChoiceModel
+    ChoiceModel -[hidden]right-> DiscreteChoiceModel
+    DiscreteChoiceModel -up-> "1" DistributionFunction : distributionFunction
+    DiscreteChoiceModel -up-> "1" UtilityAssignment : utilityAssignment
+    DiscreteChoiceModel -up-> "1" SelectionFunction : selectionFunction
+
+    'DiscreteChoiceModel ..> EnumeratedDiscreteChoiceModel : creates
+
+    DiscreteChoiceModel -[hidden]right-> DiscreteChoiceFunctionInterfaces
+
+
+    class EnumeratedDiscreteChoiceModel<R, A, P> <<dataclass>> {
+      +override select(choices: Set<A>, random: Random): R
+    }
+    EnumeratedDiscreteChoiceModel -left-|> FixedChoicesModel
+    EnumeratedDiscreteChoiceModel -up-> DiscreteChoiceModel: +model
+
+
+}
+
+
+DiscreteChoiceModels -[hidden]left-> ChoiceModels
+DiscreteChoiceModels -[hidden]right-> DiscreteChoiceFunctionInterfaces
+
+
+
+
+
+
+
+
+@enduml
