@@ -16,6 +16,7 @@ deploy-job:
   stage: publish
   only:
     - main
+    - master
   needs: [ "build" ]
   image: amazoncorretto:21
   resource_group: production #only one deploy job at a time
