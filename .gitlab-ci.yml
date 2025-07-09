@@ -2,6 +2,7 @@ image: amazoncorretto:21
 
 stages:
   - build
+  - test
   - publish
 
 build:
@@ -12,12 +13,17 @@ build:
     paths:
       - build/libs/
 
+test-job:
+  stage: test
+  script:
+    - ./gradlew test
+
 deploy-job:
   stage: publish
   only:
     - main
     - master
-  needs: [ "build" ]
+  needs: [ "test-job" ]
   image: amazoncorretto:21
   resource_group: production #only one deploy job at a time
   script:
