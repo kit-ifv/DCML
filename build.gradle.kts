@@ -2,6 +2,7 @@ plugins {
     kotlin("jvm") version  "2.2.0"
     id("maven-publish")
     id("org.jetbrains.dokka") version "2.0.0"
+    id("me.champeau.jmh") version "0.7.3"
 }
 
 group = "edu.kit.ifv.mobitopp"
@@ -12,6 +13,8 @@ repositories {
 
 dependencies {
     testImplementation(kotlin("test"))
+    jmh("org.openjdk.jmh:jmh-core:1.37")
+    jmh("org.openjdk.jmh:jmh-generator-annprocess:1.37")
 }
 
 tasks.test {
@@ -19,6 +22,9 @@ tasks.test {
 }
 kotlin {
     jvmToolchain(21)
+    compilerOptions {
+        freeCompilerArgs.add("-Xcontext-parameters")
+    }
 }
 allprojects {
     apply(plugin = "maven-publish")
