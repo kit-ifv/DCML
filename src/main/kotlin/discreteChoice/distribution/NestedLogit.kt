@@ -1,25 +1,23 @@
 package discreteChoice.distribution
 
 import discreteChoice.DistributionFunction
-import discreteChoice.models.ChoiceAlternative
 import discreteChoice.utility.printAsTree
-
-import java.util.*
+import java.util.PriorityQueue
 import kotlin.math.exp
 import kotlin.math.ln
 
 /**
  * DistributionFunction which calculates distributions
  */
-class NestedLogit<R : Any, A, P>(
+class NestedLogit<R, A, P>(
     private val structure: NestStructureData<R, A, P>,
-) : DistributionFunction<A, P> where A : ChoiceAlternative<R> {
+) : DistributionFunction<R, P> {
 
     /**
      * @param utilities Should only map choices, which are present in the `structure` of this NestedLogit. Will fail
      * if other options are mapped. Only mapped options get included in the calculation of probabilities.
      */
-    override fun calculateProbabilities(utilities: Map<A, Double>, parameters: P): Map<A, Double> {
+    override fun calculateProbabilities(utilities: Map<R, Double>, parameters: P): Map<R, Double> {
         val (root, leafs) = structure
 
         return synchronized(root) {
@@ -27,7 +25,7 @@ class NestedLogit<R : Any, A, P>(
             val relevantLeafs = utilities.entries.map {
                 AssociatedSituation(
                     it.key,
-                    leafs[it.key.choice]!!,
+                    leafs[it.key]!!,
                     it.value
                 )
             }
@@ -39,12 +37,12 @@ class NestedLogit<R : Any, A, P>(
     }
 }
 
-data class NestStructureData<R : Any, A, P>(
+data class NestStructureData<R, A, P>(
     val root: NestStructure<P>.Node,
     val leafs: Map<R, NestStructure<P>.Leaf>,
-) where A : ChoiceAlternative<R>
+)
 
-fun interface NestedStructureDataBuilder<R : Any, A, P> where A : ChoiceAlternative<R> {
+fun interface NestedStructureDataBuilder<R, A, P> {
     fun buildStructure(): NestStructureData<R, A, P>
 }
 
@@ -56,7 +54,7 @@ fun interface NestedStructureDataBuilder<R : Any, A, P> where A : ChoiceAlternat
  */
 fun <A, P> runQueue(
     situations: List<AssociatedSituation<A, P>>,
-    parameters: P
+    parameters: P,
 ) {
     val nextNests = situations.mapNotNull { it.initializeUtility() }
     // Keep nodes sorted by increasing level.
@@ -84,7 +82,7 @@ fun <A, P> runQueue(
 class AssociatedSituation<A, P>(
     val sit: A,
     val leaf: NestStructure<P>.Leaf,
-    val utility: Double
+    val utility: Double,
 ) {
     val probability get() = leaf.probability
 
@@ -110,6 +108,7 @@ class NestStructure<P> {
      */
     abstract inner class Node {
         abstract val extractAlphaParameter: (P) -> Double
+
         /**
          * Level represents the depth of the alternative in the Nest Structure, lower level nests need to
          * be calculated for their utility first.
@@ -145,7 +144,7 @@ class NestStructure<P> {
         override val extractAlphaParameter: (P) -> Double = {
             1.0
         },
-        override val name: String = hashCode().toString()
+        override val name: String = hashCode().toString(),
     ) : Node() {
         override var parent: Nest? = null
         override val level: Int = 0
@@ -189,7 +188,7 @@ class NestStructure<P> {
     inner class Nest(
         private val childNodes: Collection<Node>,
         override val name: String = hashCode().toString(),
-        val extractLambdaParameter: (P) -> Double
+        val extractLambdaParameter: (P) -> Double,
     ) :
         Node() {
         override var parent: Nest? = null
@@ -266,10 +265,12 @@ class NestStructure<P> {
         override fun leafs(): List<NestStructure<P>.Leaf> = childNodes.flatMap { it.leafs() }
 
         override fun toString(): String {
-            return "$name: (U: $utility P: $probability): Childs: ${childNodes.joinToString(
-                prefix = "[",
-                postfix = "]"
-            ) { it.name}}"
+            return "$name: (U: $utility P: $probability): Childs: ${
+                childNodes.joinToString(
+                    prefix = "[",
+                    postfix = "]"
+                ) { it.name }
+            }"
         }
     }
 }

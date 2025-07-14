@@ -3,7 +3,6 @@ package benchmark
 import discreteChoice.distribution.MultinomialLogit
 import discreteChoice.incubator.GDiscreteChoiceModel
 import discreteChoice.incubator.GFUtilityFunction
-import discreteChoice.models.ChoiceAlternative
 import discreteChoice.selection.RandomWeightedSelect
 import discreteChoice.structure.DiscreteStructure
 import discreteChoice.utility.GMapBasedUtilityEnumeration
@@ -18,20 +17,16 @@ import org.openjdk.jmh.infra.Blackhole
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
-/**
- * I would really like to be able to test changes to the discrete choice modelling with a performance output.
- */
+data class Paramters(val asc_d: Double = 0.20)
 
-class ExampleChoice(override val choice: Int) : ChoiceAlternative<Int>() {
 
-}
 
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @State(Scope.Thread)
 open class BenchmarkRun {
     val random = Random(1L)
-    val discreteChoiceModel = DiscreteStructure<Int, ExampleChoice, Unit> {
+    val discreteChoiceModel = DiscreteStructure<Int, Unit, Unit> {
         for (i in 1..10) {
             option(i) {
                 random.nextDouble(-10.0, 10.0)
@@ -55,21 +50,13 @@ open class BenchmarkRun {
         parameters = Unit
     )
 
-    @Benchmark
-    fun oldChoiceModel(blackhole: Blackhole) {
-
-
-        val options = (1..10).map { ExampleChoice(it) }.toSet()
-
-        val selection = discreteChoiceModel.select(options, random)
-        blackhole.consume(selection)
-
-    }
+    val choices = (1..10).toSet()
     @Benchmark
     fun newChoiceModel(blackhole: Blackhole) {
 
-        val selection = with(Unit) {
-            otherDiscreteChoiceModel.select((1..10).toSet(), random)
+
+        val selection = context(Unit, random) {
+            otherDiscreteChoiceModel.select(choices)
         }
         blackhole.consume(selection)
     }
@@ -90,4 +77,10 @@ open class BenchmarkRun {
 
     private fun method(pair: Pair<Int, Int>): Int = pair.first + pair.second
     private fun method(a: Int, b: Int): Int = a + b
+}
+
+fun main() {
+    val choiceModel = BenchmarkRun().otherDiscreteChoiceModel
+    context(Unit, Random(1)) {
+        choiceModel.select(setOf(1, 2, 3, 4))   }
 }

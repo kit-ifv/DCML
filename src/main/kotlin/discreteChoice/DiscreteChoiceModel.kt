@@ -1,7 +1,5 @@
 package discreteChoice
 
-import discreteChoice.models.ChoiceAlternative
-import discreteChoice.models.ChoiceFilter
 import discreteChoice.models.ChoiceModel
 import discreteChoice.models.FixedChoicesModel
 import discreteChoice.utility.associateWithNotNull
@@ -22,7 +20,7 @@ fun interface UtilityFunction<A, P> {
  * position=Karlsruhe... whatever). `P` is the type which contains these concrete values. It's the type the returned
  * Utility function expects.
  */
-fun interface UtilityAssignment<R : Any, A, P> where A : ChoiceAlternative<R> {
+fun interface UtilityAssignment<A, G, P> {
     fun getUtilityFunctionFor(alternative: A): UtilityFunction<A, P>?
     operator fun get(alternative: A) = getUtilityFunctionFor(alternative)
 }
@@ -59,21 +57,21 @@ fun interface SelectionFunction<X> {
  * status... whatever, but this is, what the `utilityAssignment` bases its concrete utility values of each alternative
  * on.)
  */
-data class DiscreteChoiceModel<R : Any, A, P>(
+data class DiscreteChoiceModel<A, G, P>(
     override val name: String,
-    override val choiceFilter: ChoiceFilter<A>,
-    val utilityAssignment: UtilityAssignment<R, A, P>,
+    val utilityAssignment: UtilityAssignment<A, G, P>,
     val distributionFunction: DistributionFunction<A, P>,
     val selectionFunction: SelectionFunction<A>,
     val parameters: P,
-) : ChoiceModel<A, R> where A : ChoiceAlternative<R> {
+) : ChoiceModel<A, G> {
 
     /**
      * @return whatever the `selectionFunction` returns when given the probabilities of all choices and the random
      * generator.
      */
-    override fun select(choices: Set<A>, random: Random): R =
-        selectionFunction.calculateSelection(probabilities(choices), random).choice
+    context(global: G, random: Random)
+    override fun select(choices: Set<A>): A =
+        selectionFunction.calculateSelection(probabilities(choices), random)
 
     /**
      * Selects an alternative by injecting custom modifications into the utility calculation
@@ -89,17 +87,15 @@ data class DiscreteChoiceModel<R : Any, A, P>(
      * @param random The source of randomness used in the selection process.
      * @return The selected alternative after applying the modified utilities.
      */
-    fun selectInjected(choices: Set<A>, injections: Map<R, (Double) -> Double>, random: Random) :R {
+    fun selectInjected(choices: Set<A>, injections: Map<A, (Double) -> Double>, random: Random): A {
         val modifiedUtilities = utilities(choices).mapValues { (alternative, utility) ->
-            val injection = injections[alternative.choice] ?: {it}
+            val injection = injections[alternative] ?: { it }
             injection(utility)
         }
-        return selectionFunction.calculateSelection(probabilities(modifiedUtilities), random).choice
+        return selectionFunction.calculateSelection(probabilities(modifiedUtilities), random)
 
     }
 
-    fun selectInjected(choices: Set<R>, injections: Map<R, (Double) -> Double>, random: Random, converter: (R) ->A) :R=
-        selectInjected(choices.map { converter(it) }.toSet(), injections, random)
     /**
      * @return a map with each alternative mapped to its probability.
      */
@@ -108,6 +104,7 @@ data class DiscreteChoiceModel<R : Any, A, P>(
 
     fun probabilities(utilities: Map<A, Double>) =
         distributionFunction.calculateProbabilities(utilities, parameters)
+
     /**
      * @return a map with each alternative mapped to its utility value.
      */
@@ -122,24 +119,24 @@ data class DiscreteChoiceModel<R : Any, A, P>(
         utilityAssignment[alternative]?.calculateUtility(alternative, parameters)
     ) {
         "Error in model $name: \n" +
-            "No utility function was designed for ${alternative.choice}"
+                "No utility function was designed for ${alternative}"
     }
 
     /**
      * @param choices the alternatives the new ChoiceModel works on.
      * @return an EnumeratedDiscreteChoiceModel, which behaves like this model, but works on the given `choices`.
      */
-    fun with(choices: Set<R>) = EnumeratedDiscreteChoiceModel<R, A, P>(this, choices)
+    fun with(choices: Set<A>) = EnumeratedDiscreteChoiceModel<A, G, P>(this, choices)
 }
 
 /**
  * A ChoiceModel based on another DiscreteChoiceModel (`model`). Behaves like the `model` if the `model` had the
  * `choices` as its alternatives.
  */
-data class EnumeratedDiscreteChoiceModel<R : Any, A, P>(
+data class EnumeratedDiscreteChoiceModel<R, A, P>(
     val model: DiscreteChoiceModel<R, A, P>,
     override val choices: Set<R>,
-) : ChoiceModel<A, R> by model, FixedChoicesModel<A, R> where A : ChoiceAlternative<R> {
-
-    override fun select(choices: Set<A>, random: Random): R = model.select(choices, random)
+) : ChoiceModel<R, A> by model, FixedChoicesModel<R, A> {
+    context(global: A, random: Random)
+    override fun select(choices: Set<R>): R = model.select(choices)
 }

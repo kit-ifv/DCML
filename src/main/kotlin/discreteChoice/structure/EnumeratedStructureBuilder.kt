@@ -4,34 +4,32 @@ import discreteChoice.UtilityAssignment
 import discreteChoice.UtilityFunction
 import discreteChoice.distribution.NestStructure
 import discreteChoice.utility.UtilityEnumeration
-import discreteChoice.models.ChoiceAlternative
 
-fun interface UtilityAssignmentBuilder<R : Any, A, P> where A : ChoiceAlternative<R> {
+fun interface UtilityAssignmentBuilder<R, A, P> {
 
     // TODO add name here?
 
     fun build(): UtilityAssignment<R, A, P>
 }
 
-fun interface UtilityEnumerationBuilder<R : Any, A, P> : UtilityAssignmentBuilder<R, A, P>
-    where A : ChoiceAlternative<R> {
+fun interface UtilityEnumerationBuilder<R, A, P> : UtilityAssignmentBuilder<R, A, P> {
 
     override fun build(): UtilityEnumeration<R, A, P>
 }
 
-interface EnumeratedStructureBuilder<R : Any, A, P> where A : ChoiceAlternative<R> {
+interface EnumeratedStructureBuilder<R, A, P> {
     /**
      * Checking whether a situation is equal to a certain element x is a concretization of the more general
      * concept of when to apply a rule.
      */
-    fun addUtilityFunctionByIdentifier(option: R, utilityFunction: UtilityFunction<A, P>)
+    fun addUtilityFunctionByIdentifier(option: R, utilityFunction: UtilityFunction<R, P>)
 
     /**
      * Add an option to a nest block via specifying the concrete choice [option] as well as a [utilityFunction] to
      * create a utility function from the parameters and choice situations.
      */
-    fun option(option: R, utilityFunction: P.(A) -> Double) {
-        val internalUtilityFunction = UtilityFunction { alternative: A, parameterObject: P ->
+    fun option(option: R, utilityFunction: P.(R) -> Double) {
+        val internalUtilityFunction = UtilityFunction { alternative: R, parameterObject: P ->
             utilityFunction.invoke(
                 parameterObject,
                 alternative
@@ -45,8 +43,8 @@ interface EnumeratedStructureBuilder<R : Any, A, P> where A : ChoiceAlternative<
      * create a utility function from the parameters and choice situations. Additionally allows a conversion
      * to a different parameter object [T] in case the original parameter object is too verbose/complex
      */
-    fun <T> option(option: R, parameters: P.() -> T, utilityFunction: T.(A) -> Double) {
-        val internalUtilityFunction = UtilityFunction { alternative: A, parameterObject: P ->
+    fun <T> option(option: R, parameters: P.() -> T, utilityFunction: T.(R) -> Double) {
+        val internalUtilityFunction = UtilityFunction { alternative: R, parameterObject: P ->
             utilityFunction.invoke(
                 parameterObject.parameters(),
                 alternative
@@ -55,19 +53,7 @@ interface EnumeratedStructureBuilder<R : Any, A, P> where A : ChoiceAlternative<
         addUtilityFunctionByIdentifier(option, internalUtilityFunction)
     }
 
-    /**
-     * Theoretically you can also specify options via their Situation instantiations, but that seems weird
-     */
-    fun option(option: A, utilityFunction: P.(A) -> Double) {
-        option(option.choice, utilityFunction)
-    }
 
-    /**
-     * Theoretically you can also specify options via their Situation instantiations, but that seems weird
-     */
-    fun <T> option(option: A, parameters: P.() -> T, utilityFunction: T.(A) -> Double) {
-        option(option.choice, parameters, utilityFunction)
-    }
 }
 
 /**
@@ -76,9 +62,12 @@ interface EnumeratedStructureBuilder<R : Any, A, P> where A : ChoiceAlternative<
  * with the corresponding type T from the parameter object. Note that at this point no check can occur whether the index
  * actually exists in the parameter object, as this object is unknown at the creation time of the structure.
  */
-fun <T, R: Any, A: ChoiceAlternative<R>, P: List<T>> EnumeratedStructureBuilder<R, A, P>.bulkList(options: Collection<R>, utilityFunction: T.(A) -> Double) {
+fun <T, R, A, P : List<T>> EnumeratedStructureBuilder<R, A, P>.bulkList(
+    options: Collection<R>,
+    utilityFunction: T.(R) -> Double,
+) {
     options.withIndex().forEach { (index, value) ->
-        option(value, parameters = { this[index] } , utilityFunction)
+        option(value, parameters = { this[index] }, utilityFunction)
     }
 }
 
@@ -86,22 +75,24 @@ fun <T, R: Any, A: ChoiceAlternative<R>, P: List<T>> EnumeratedStructureBuilder<
  * Similarly to [bulkList] if the parameter object implements the map interface we can trivialize the initialization by simply
  * redirecting the check for the correct parameter implementation by inserting the element R
  */
-fun <T, R: Any, A: ChoiceAlternative<R>, P: Map<R, T>> EnumeratedStructureBuilder<R, A, P>.bulkMap(options: Collection<R>, utilityFunction: T.(A) -> Double) {
+fun <T, R, A, P : Map<R, T>> EnumeratedStructureBuilder<R, A, P>.bulkMap(
+    options: Collection<R>,
+    utilityFunction: T.(R) -> Double,
+) {
     options.forEach { currentOption ->
-        option(currentOption, parameters = { this.getValue(currentOption) } , utilityFunction)
+        option(currentOption, parameters = { this.getValue(currentOption) }, utilityFunction)
     }
 }
 
-interface RuleBasedStructureBuilder<R : Any, A, P> : EnumeratedStructureBuilder<R, A, P>
-    where A : ChoiceAlternative<R> {
-    fun addUtilityFunctionByRule(rule: (A) -> Boolean, utilityFunction: UtilityFunction<A, P>)
+interface RuleBasedStructureBuilder<R, A, P> : EnumeratedStructureBuilder<R, A, P> {
+    fun addUtilityFunctionByRule(rule: (R) -> Boolean, utilityFunction: UtilityFunction<R, P>)
 
-    override fun addUtilityFunctionByIdentifier(option: R, utilityFunction: UtilityFunction<A, P>) {
-        addUtilityFunctionByRule(rule = { it.choice == option }, utilityFunction)
+    override fun addUtilityFunctionByIdentifier(option: R, utilityFunction: UtilityFunction<R, P>) {
+        addUtilityFunctionByRule(rule = { it == option }, utilityFunction)
     }
 
-    fun <T> rule(rule: (A) -> Boolean, parameters: P.() -> T, utilityFunction: T.(A) -> Double) {
-        val internalUtilityFunction = UtilityFunction { alternative: A, parameterObject: P ->
+    fun <T> rule(rule: (R) -> Boolean, parameters: P.() -> T, utilityFunction: T.(R) -> Double) {
+        val internalUtilityFunction = UtilityFunction { alternative: R, parameterObject: P ->
             utilityFunction.invoke(
                 parameterObject.parameters(),
                 alternative
@@ -110,8 +101,8 @@ interface RuleBasedStructureBuilder<R : Any, A, P> : EnumeratedStructureBuilder<
         addUtilityFunctionByRule(rule, internalUtilityFunction)
     }
 
-    fun rule(rule: (A) -> Boolean, utilityFunction: P.(A) -> Double) {
-        val internalUtilityFunction = UtilityFunction { alternative: A, parameterObject: P ->
+    fun rule(rule: (R) -> Boolean, utilityFunction: P.(R) -> Double) {
+        val internalUtilityFunction = UtilityFunction { alternative: R, parameterObject: P ->
             utilityFunction.invoke(
                 parameterObject,
                 alternative
@@ -120,11 +111,11 @@ interface RuleBasedStructureBuilder<R : Any, A, P> : EnumeratedStructureBuilder<
         addUtilityFunctionByRule(rule, internalUtilityFunction)
     }
 
-    fun ruleForAll(utilityFunction: P.(A) -> Double) {
+    fun ruleForAll(utilityFunction: P.(R) -> Double) {
         rule({ true }, utilityFunction)
     }
 
-    fun <T> ruleForAll(parameters: P.() -> T, utilityFunction: T.(A) -> Double) {
+    fun <T> ruleForAll(parameters: P.() -> T, utilityFunction: T.(R) -> Double) {
         rule({ true }, parameters, utilityFunction)
     }
 }
@@ -150,7 +141,7 @@ interface NestStructureBuilder<R, P, B> where B : NestStructureBuilder<R, P, B> 
     fun nest(
         name: String,
         lambdaParameter: P.() -> Double,
-        content: B.() -> Unit
+        content: B.() -> Unit,
     ): NestStructure<P>.Nest {
         val newBuilder = new()
         newBuilder.content()
@@ -158,7 +149,7 @@ interface NestStructureBuilder<R, P, B> where B : NestStructureBuilder<R, P, B> 
         val childNodes = newBuilder.children()
         require(childNodes.isNotEmpty()) {
             "Cannot create an empty nest. You must add at least one option in a nest block using " +
-                "the option(...) { } syntax. This includes the implicit root nest block. "
+                    "the option(...) { } syntax. This includes the implicit root nest block. "
         }
         val nest = NestStructure<P>().Nest(childNodes, name, lambdaParameter)
         childNodes.forEach { it.parent = nest }

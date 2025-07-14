@@ -1,6 +1,5 @@
 package discreteChoice
 
-import discreteChoice.models.ChoiceAlternative
 import discreteChoice.structure.CrossNestedStructure
 import discreteChoice.utility.crossNestedLogit
 
@@ -8,27 +7,24 @@ import org.junit.jupiter.api.assertThrows
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-private class Alternative(override val choice: Int) : ChoiceAlternative<Int>() {
-    companion object {
-        fun fromInt(int: Int): Alternative = Alternative(int)
-    }
-}
+
 
 private data class Parameters(val base: Double = 1.0)
 
 class CrossNestedLogitTest {
 
-    private fun DiscreteChoiceModel<Int, ChoiceAlternative<Int>, Parameters>.castProbabilities(
+    private fun DiscreteChoiceModel<Int, *, Parameters>.castProbabilities(
         vararg targets: Int
     ): Map<Int, Double> {
-        return probabilities(
-            targets.map { Alternative.fromInt(it) }.toSet(),
-        ).mapKeys { it.key.choice }
+
+        return with(Unit) {
+            probabilities(targets.toSet())
+        }
     }
 
     @Test
     fun simpleCrossNested() {
-        val crossNestedModel = CrossNestedStructure<Int, ChoiceAlternative<Int>, Parameters> {
+        val crossNestedModel = CrossNestedStructure<Int, Unit, Parameters> {
             option(1)
             option(2)
         }.withUtility {
@@ -66,7 +62,7 @@ class CrossNestedLogitTest {
         var lambda1 = 1.0
         var lambda2 = 1.0
 
-        val crossNestedModel = CrossNestedStructure<Int, ChoiceAlternative<Int>, Parameters> {
+        val crossNestedModel = CrossNestedStructure<Int, Unit, Parameters> {
             nest("A", lambda = lambda1) {
                 option(1, alpha = alpha1)
                 option(2)
@@ -107,7 +103,7 @@ class CrossNestedLogitTest {
     @Test
     fun crossnestedWithLambdaIsValid() {
         var lambda1 = 1.0
-        val crossNestedModel = CrossNestedStructure<Int, ChoiceAlternative<Int>, Parameters> {
+        val crossNestedModel = CrossNestedStructure<Int, Unit, Parameters> {
             nest(name = "Nest 1", lambda = lambda1) {
                 option(1, alpha = { 0.8 })
                 option(2)

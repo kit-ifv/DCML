@@ -25,7 +25,6 @@ class MultinomialLogit<X, P> : DistributionFunction<X, P>, ParameterlessDistribu
     }
 
 
-
     private fun Map<X, Double>.containsInfinity(): Boolean {
         return any { it.value == Double.POSITIVE_INFINITY }
     }
@@ -33,7 +32,7 @@ class MultinomialLogit<X, P> : DistributionFunction<X, P>, ParameterlessDistribu
     private fun Map<X, Double>.mapInfinityToEqualDistribution(): Map<X, Double> {
         val numberOfInfinity = count { it.value == Double.POSITIVE_INFINITY }
         val equalProb = 1.0 / numberOfInfinity
-        return this.mapValues { if (it.value == Double.POSITIVE_INFINITY) equalProb  else 0.0 }
+        return this.mapValues { if (it.value == Double.POSITIVE_INFINITY) equalProb else 0.0 }
     }
 
     override fun calculateProbabilities(utilities: Map<X, Double>): Map<X, Double> {
@@ -45,7 +44,7 @@ class MultinomialLogit<X, P> : DistributionFunction<X, P>, ParameterlessDistribu
         }
         val sum = expUtilities.values.sum()
 
-        if(sum == 0.0) {
+        if (sum == 0.0) {
             return utilities.mapValues { 1.0 / utilities.size }
         }
         return expUtilities.mapValues { it.value / sum }

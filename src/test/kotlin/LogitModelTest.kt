@@ -1,13 +1,11 @@
 package discreteChoice
 
-import discreteChoice.models.ChoiceAlternative
 import discreteChoice.structure.DiscreteStructure
 import discreteChoice.utility.multinomialLogit
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-private class InternalAlternative(override val choice: Int): ChoiceAlternative<Int>()
 private class ControlledRandom(seed: Int): Random() {
     private val random = Random(seed)
     /**
@@ -33,7 +31,7 @@ private class ControlledRandom(seed: Int): Random() {
 
 }
 class LogitModelTest {
-    private val discreteChoiceModel: DiscreteChoiceModel<Int, ChoiceAlternative<Int>, Unit> = DiscreteStructure<Int, ChoiceAlternative<Int>, Unit> {
+    private val discreteChoiceModel: DiscreteChoiceModel<Int, Unit, Unit> = DiscreteStructure<Int, Unit, Unit> {
                 option(1) {
                     0.0
                 }
@@ -46,16 +44,23 @@ class LogitModelTest {
 
             }.multinomialLogit("Test model").build(Unit).model
 
-    private val selection = setOf(1, 2, 3).map { InternalAlternative(it) }.toSet()
+    private val selection = setOf(1, 2, 3)
     private val random = ControlledRandom(1)
     @Test
     fun utilityManipulation()  {
         val injections: Map<Int, (Double) -> Double> = mapOf(2 to { 0.0 })
 
 
-        println(discreteChoiceModel.probabilities(selection))
         assertEquals(2, select(0.3335, injections))
         assertEquals(1, select(0.3332, injections))
+    }
+    @Test
+    fun globalObjectPassing()  {
+        val choiceModel = DiscreteStructure<Int, Pair<Int, Double>, Unit> {
+            option(1) {
+                0.0
+            }
+        }.multinomialLogit("Test model").build(Unit)
     }
     private fun select(randomValue: Double? = null, injection: Map<Int, (Double) -> Double>): Int {
         random.randomNumber = randomValue

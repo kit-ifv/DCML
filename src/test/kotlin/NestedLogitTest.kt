@@ -1,16 +1,14 @@
 package discreteChoice
 
-import discreteChoice.models.ChoiceAlternative
 import discreteChoice.structure.NestedStructure
 import discreteChoice.utility.nestedLogit
-
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import kotlin.test.assertEquals
 
 class NestedLogitTest {
 
-    private val choiceModel = NestedStructure<Options, Alternative, RedbusParameters> {
+    private val choiceModel = NestedStructure<Options, Unit, RedbusParameters> {
         option(Options.CAR) {
             0.0
         }
@@ -27,25 +25,25 @@ class NestedLogitTest {
     @Test
     fun redBusBlueBus() {
         val model = choiceModel.build(identical).model
-        val result = model.probabilities(Alternative.ALL_VALID)
-        assertEquals(result[Alternative(Options.RED_BUS)], 0.25)
-        assertEquals(result[Alternative(Options.BLUE_BUS)], 0.25)
-        assertEquals(result[Alternative(Options.CAR)], 0.5)
+        val result = model.probabilities(Options.ALL_VALID)
+        assertEquals(result[Options.RED_BUS], 0.25)
+        assertEquals(result[Options.BLUE_BUS], 0.25)
+        assertEquals(result[Options.CAR], 0.5)
     }
 
     @Test
     fun invariantRedBus() {
         val model = choiceModel.build(different).model
-        val result = model.probabilities(Alternative.ALL_VALID)
-        assertEquals(result[Alternative(Options.RED_BUS)], 1.0 / 3)
-        assertEquals(result[Alternative(Options.BLUE_BUS)], 1.0 / 3)
-        assertEquals(result[Alternative(Options.CAR)], 1.0 / 3)
+        val result = model.probabilities(Options.ALL_VALID)
+        assertEquals(result[Options.RED_BUS], 1.0 / 3)
+        assertEquals(result[Options.BLUE_BUS], 1.0 / 3)
+        assertEquals(result[Options.CAR], 1.0 / 3)
     }
 
     @Test
     fun duplicateOptionsAreCaught() {
         assertThrows<IllegalArgumentException> {
-            NestedStructure<Options, Alternative, RedbusParameters> {
+            NestedStructure<Options, Unit, RedbusParameters> {
                 option(Options.CAR) {
                     1.0
                 }
@@ -59,18 +57,20 @@ class NestedLogitTest {
     @Test
     fun emptyStructuresAreCaught() {
         assertThrows<IllegalArgumentException> {
-            NestedStructure<Options, Alternative, RedbusParameters> { }
+            NestedStructure<Options, Unit, RedbusParameters> { }
         }
     }
 
     @Test
     fun emptyNestsAreCaught() {
         assertThrows<IllegalArgumentException> {
-            NestedStructure<Options, Alternative, RedbusParameters> {
+            NestedStructure<Options, Unit, RedbusParameters> {
                 nest("A") {
                     nest("B") {
                         nest("C") {
-                            nest("D") {}
+                            nest("D") {
+
+                            }
                         }
                     }
                 }
@@ -82,14 +82,12 @@ class NestedLogitTest {
     fun unassociatedElementsGiveMessage() {
         assertThrows<IllegalArgumentException> {
             choiceModel.build(RedbusParameters(1.0)).model.probabilities(
-                Alternative.ALL_VALID + setOf(Alternative(Options.OTHER_ILLEGAL_OPTION))
+                Options.ALL_VALID + Options.OTHER_ILLEGAL_OPTION
             )
         }
     }
 
-    operator fun <X : Any> Map<ChoiceAlternative<X>, Double>.get(x: X): Double {
-        return entries.first { it.key == x }.value
-    }
+
 
     private class RedbusParameters(val lambdaBus: Double) {
         val pedestrian = DifferentParameters.fromRedbusParameters(this)
@@ -114,12 +112,12 @@ class NestedLogitTest {
     private val different = RedbusParameters(1.0)
 
     private enum class Options {
-        RED_BUS, BLUE_BUS, CAR, OTHER_ILLEGAL_OPTION
-    }
+        RED_BUS, BLUE_BUS, CAR, OTHER_ILLEGAL_OPTION;
 
-    private class Alternative(override val choice: Options) : ChoiceAlternative<Options>() {
         companion object {
-            val ALL_VALID = setOf(Alternative(Options.RED_BUS), Alternative(Options.BLUE_BUS), Alternative(Options.CAR))
+            val ALL_VALID = setOf(RED_BUS, BLUE_BUS, CAR)
         }
     }
+
+
 }

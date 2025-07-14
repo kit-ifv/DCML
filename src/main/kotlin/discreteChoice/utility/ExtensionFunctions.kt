@@ -3,7 +3,7 @@ package discreteChoice.utility
 import kotlin.math.sign
 
 inline fun <K, V> Iterable<K>.associateWithNotNull(
-    valueSelector: (K) -> V?
+    valueSelector: (K) -> V?,
 ): Map<K, V> = this.mapNotNull { key -> valueSelector(key)?.let { key to it } }.toMap()
 
 fun String.indentSubsequentLines(indentMarker: String = ":", prefix: String = ""): String {

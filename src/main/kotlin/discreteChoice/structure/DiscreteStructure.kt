@@ -6,13 +6,11 @@ import discreteChoice.utility.MapBasedUtilityEnumeration
 import discreteChoice.utility.Rule
 import discreteChoice.utility.RuleBasedUtilityAssignment
 import discreteChoice.utility.UtilityEnumeration
-import discreteChoice.models.ChoiceAlternative
-
-class DiscreteStructure<R : Any, A, P>(
+class DiscreteStructure<R, A, P>(
     lambda: DiscreteStructure<R, A, P>.() -> Unit,
-) : EnumeratedStructureBuilder<R, A, P>, UtilityEnumerationBuilder<R, A, P> where A : ChoiceAlternative<R> {
+) : EnumeratedStructureBuilder<R, A, P>, UtilityEnumerationBuilder<R, A, P> {
 
-    private val options = mutableMapOf<R, UtilityFunction<A, P>>()
+    private val options = mutableMapOf<R, UtilityFunction<R, P>>()
 
     init {
         this.lambda()
@@ -20,28 +18,28 @@ class DiscreteStructure<R : Any, A, P>(
 
     override fun build(): UtilityEnumeration<R, A, P> = MapBasedUtilityEnumeration(map = options)
 
-    override fun addUtilityFunctionByIdentifier(option: R, utilityFunction: UtilityFunction<A, P>) {
+    override fun addUtilityFunctionByIdentifier(option: R, utilityFunction: UtilityFunction<R, P>) {
         require(!options.containsKey(option)) {
             "Duplicate: A utility function for $option has already been defined in this structure. " +
-                "Current elements ${options.keys} already have a utility function associated. "
+                    "Current elements ${options.keys} already have a utility function associated. "
         }
         options[option] = utilityFunction
     }
 }
 
-class RuleBasedStructure<R : Any, A, P>(
+class RuleBasedStructure<R, A, P>(
     lambda: RuleBasedStructure<R, A, P>.() -> Unit,
-) : RuleBasedStructureBuilder<R, A, P>, UtilityAssignmentBuilder<R, A, P> where A : ChoiceAlternative<R> {
+) : RuleBasedStructureBuilder<R, A, P>, UtilityAssignmentBuilder<R, A, P> {
 
-    val rules = mutableListOf<Rule<A, P>>()
+    val rules = mutableListOf<Rule<R, P>>()
 
     init {
         this.lambda()
     }
 
     override fun addUtilityFunctionByRule(
-        rule: (A) -> Boolean,
-        utilityFunction: UtilityFunction<A, P>
+        rule: (R) -> Boolean,
+        utilityFunction: UtilityFunction<R, P>,
     ) {
         rules.add(Rule(rule, utilityFunction))
     }

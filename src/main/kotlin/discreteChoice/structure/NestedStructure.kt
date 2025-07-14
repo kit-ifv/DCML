@@ -6,18 +6,16 @@ import discreteChoice.distribution.NestStructureData
 import discreteChoice.distribution.NestedStructureDataBuilder
 import discreteChoice.utility.MapBasedUtilityEnumeration
 import discreteChoice.utility.UtilityEnumeration
-import discreteChoice.models.ChoiceAlternative
 
-class NestedStructure<R : Any, A, P>(
+class NestedStructure<R, A, P>(
 
     lambda: NestedTree<R, A, P>.() -> Unit,
 ) :
     UtilityEnumerationBuilder<R, A, P>,
-    NestedStructureDataBuilder<R, A, P>
-    where A : ChoiceAlternative<R> {
+    NestedStructureDataBuilder<R, A, P> {
 
     private val leafs: MutableMap<R, NestStructure<P>.Leaf> = mutableMapOf()
-    private val utilityFunctions: MutableMap<R, UtilityFunction<A, P>> = mutableMapOf()
+    private val utilityFunctions: MutableMap<R, UtilityFunction<R, P>> = mutableMapOf()
     private val root: NestStructure<P>.Nest =
         NestedTree<R, A, P>(leafs, utilityFunctions).nest("root") {
             lambda()
@@ -28,12 +26,11 @@ class NestedStructure<R : Any, A, P>(
     override fun buildStructure() = NestStructureData<R, A, P>(root, leafs.toMap())
 }
 
-class NestedTree<R : Any, A, P>(
+class NestedTree<R, A, P>(
     private val leafs: MutableMap<R, NestStructure<P>.Leaf>,
-    private val utilityFunctions: MutableMap<R, UtilityFunction<A, P>>
+    private val utilityFunctions: MutableMap<R, UtilityFunction<R, P>>,
 ) : EnumeratedStructureBuilder<R, A, P>,
-    NestStructureBuilder<R, P, NestedTree<R, A, P>>
-    where A : ChoiceAlternative<R> {
+    NestStructureBuilder<R, P, NestedTree<R, A, P>> {
 
     private val children: MutableList<NestStructure<P>.Node> = mutableListOf()
 
@@ -43,13 +40,13 @@ class NestedTree<R : Any, A, P>(
         children.add(nest)
     }
 
-    override fun addUtilityFunctionByIdentifier(option: R, utilityFunction: UtilityFunction<A, P>) {
+    override fun addUtilityFunctionByIdentifier(option: R, utilityFunction: UtilityFunction<R, P>) {
         utilityFunctions[option] = utilityFunction
         val element = NestStructure<P>().Leaf()
         children.add(element)
         require(!leafs.containsKey(option)) {
             "A utility function for $option has already been defined in this nest structure. Current elements" +
-                " ${leafs.keys} have a utility function associated. "
+                    " ${leafs.keys} have a utility function associated. "
         }
         leafs[option] = element
     }

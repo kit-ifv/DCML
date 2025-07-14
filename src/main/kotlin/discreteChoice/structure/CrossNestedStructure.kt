@@ -6,11 +6,10 @@ import discreteChoice.distribution.CrossNestedStructureDataBuilder
 import discreteChoice.distribution.NestStructure
 import discreteChoice.utility.MapBasedUtilityEnumeration
 import discreteChoice.utility.UtilityEnumeration
-import discreteChoice.models.ChoiceAlternative
 
-class CrossNestedStructure<R : Any, A, P>(
+class CrossNestedStructure<R, A, P>(
     content: CrossNestedDAG<R, P>.() -> Unit,
-) : CrossNestedStructureDataBuilder<R, A, P> where A : ChoiceAlternative<R> {
+) : CrossNestedStructureDataBuilder<R, A, P> {
 
     private val leafsByOption: MutableMap<R, MutableList<NestStructure<P>.Leaf>> = mutableMapOf()
     private val root: NestStructure<P>.Nest =
@@ -26,7 +25,7 @@ class CrossNestedStructure<R : Any, A, P>(
 }
 
 class CrossNestedDAG<R, P>(
-    val leafsByOption: MutableMap<R, MutableList<NestStructure<P>.Leaf>>
+    val leafsByOption: MutableMap<R, MutableList<NestStructure<P>.Leaf>>,
 ) : NestStructureBuilder<R, P, CrossNestedDAG<R, P>> {
 
     private val children: MutableList<NestStructure<P>.Node> = mutableListOf()
@@ -51,15 +50,14 @@ class CrossNestedDAG<R, P>(
     }
 }
 
-class CrossNestedWithUtilities<R : Any, A, P>(
+class CrossNestedWithUtilities<R, A, P>(
     private val structure: CrossNestedStructure<R, A, P>,
     lambda: EnumeratedStructureBuilder<R, A, P>.() -> Unit,
 ) : EnumeratedStructureBuilder<R, A, P>,
     UtilityEnumerationBuilder<R, A, P>,
-    CrossNestedStructureDataBuilder<R, A, P> by structure
-    where A : ChoiceAlternative<R> {
+    CrossNestedStructureDataBuilder<R, A, P> by structure {
 
-    private var utilityFunctions: MutableMap<R, UtilityFunction<A, P>> = mutableMapOf()
+    private var utilityFunctions: MutableMap<R, UtilityFunction<R, P>> = mutableMapOf()
 
     init {
         lambda()
@@ -67,11 +65,11 @@ class CrossNestedWithUtilities<R : Any, A, P>(
 
     override fun addUtilityFunctionByIdentifier(
         option: R,
-        utilityFunction: UtilityFunction<A, P>
+        utilityFunction: UtilityFunction<R, P>,
     ) {
         require(!utilityFunctions.containsKey(option)) {
             "Duplicate: A utility function for $option has already been defined in this structure. " +
-                "Current elements ${utilityFunctions.keys} already have a utility function associated. "
+                    "Current elements ${utilityFunctions.keys} already have a utility function associated. "
         }
         utilityFunctions[option] = utilityFunction
     }
