@@ -18,38 +18,28 @@ fun interface UtilityEnumerationBuilder<R, A, P> : UtilityAssignmentBuilder<R, A
     override fun build(): UtilityEnumeration<R, A, P>
 }
 
-data class CollectTheStuff<A, G>(
-    val global: G,
-    val choice: A,
-)
-
-interface EnumeratedStructureBuilder<A, G, P> {
+interface EnumeratedStructureBuilder<A, C, P> {
     /**
      * Checking whether a situation is equal to a certain element x is a concretization of the more general
      * concept of when to apply a rule.
      */
-    fun addUtilityFunctionByIdentifier(option: A, utilityFunction: UtilityFunction<A, G, P>)
+    fun addUtilityFunctionByIdentifier(option: A, utilityFunction: UtilityFunction<A, C, P>)
 
     /**
      * Add an option to a nest block via specifying the concrete choice [option] as well as a [utilityFunction] to
      * create a utility function from the parameters and choice situations.
      */
 
-    fun option(option: A, utilityFunction: P.(CollectTheStuff<A, G>) -> Double) {
-
-        val internalUtilityFunction: UtilityFunction<A, G, P> = UtilityFunction {
-
-                alternative: A, global: G, parameters: P ->
-            utilityFunction.invoke(parameters, CollectTheStuff(global, alternative))
-
-
+    fun option(option: A, utilityFunction: P.(A, C) -> Double) {
+        val internalUtilityFunction = UtilityFunction { a: A, g: C, p: P ->
+            utilityFunction.invoke(p, a, g)
         }
+
         addUtilityFunctionByIdentifier(option, internalUtilityFunction)
     }
-
-    fun option(option: A, utilityFunction: P.(A, G) -> Double) {
-        val internalUtilityFunction = UtilityFunction { a: A, g: G, p: P ->
-            utilityFunction.invoke(p, a, g)
+    fun option(option: A, utilityFunction: P.(Pair<A, C>) -> Double) {
+        val internalUtilityFunction = UtilityFunction { a: A, c: C, p: P ->
+            utilityFunction.invoke(p, a to c)
         }
 
         addUtilityFunctionByIdentifier(option, internalUtilityFunction)
@@ -61,7 +51,7 @@ interface EnumeratedStructureBuilder<A, G, P> {
      * to a different parameter object [T] in case the original parameter object is too verbose/complex
      */
     fun <T> option(option: A, parameters: P.() -> T, utilityFunction: T.(A) -> Double) {
-        val internalUtilityFunction = UtilityFunction { alternative: A, global: G, parameterObject: P ->
+        val internalUtilityFunction = UtilityFunction { alternative: A, global: C, parameterObject: P ->
             utilityFunction.invoke(
                 parameterObject.parameters(),
                 alternative

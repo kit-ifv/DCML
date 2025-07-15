@@ -3,11 +3,11 @@ package edu.kit.ifv.mobitopp.discretechoice.distribution
 import edu.kit.ifv.mobitopp.discretechoice.DistributionFunction
 
 
-class CrossNestedLogit<R, GLOBAL, P>(
-    private val structure: CrossNestStructureData<R, GLOBAL, P>,
-) : DistributionFunction<R, P> {
+class CrossNestedLogit<A, P>(
+    private val structure: CrossNestStructureData<A, P>,
+) : DistributionFunction<A, P> {
 
-    override fun calculateProbabilities(utilities: Map<R, Double>, parameters: P): Map<R, Double> {
+    override fun calculateProbabilities(utilities: Map<A, Double>, parameters: P): Map<A, Double> {
         require(utilities.isNotEmpty()) {
             "Received empty utility map!"
         }
@@ -45,15 +45,15 @@ class CrossNestedLogit<R, GLOBAL, P>(
 /**
  * The nest structure.
  */
-data class CrossNestStructureData<R, A, P>(
+data class CrossNestStructureData<A, P>(
     val root: NestStructure<P>.Node,
-    val leafs: Map<R, List<NestStructure<P>.Leaf>>,
+    val leafs: Map<A, List<NestStructure<P>.Leaf>>,
 )
 
 
 /**
  * Functional interface for conditional spawning of CrossNestedStructureData.
  */
-fun interface CrossNestedStructureDataBuilder<R, A, P> {
-    fun buildStructure(): CrossNestStructureData<R, A, P>
+fun interface CrossNestedStructureDataBuilder<A, P> {
+    fun buildStructure(): CrossNestStructureData<A, P>
 }

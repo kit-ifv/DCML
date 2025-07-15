@@ -8,21 +8,21 @@ import edu.kit.ifv.mobitopp.discretechoice.distribution.NestStructure
 import edu.kit.ifv.mobitopp.discretechoice.utility.MapBasedUtilityEnumeration
 import edu.kit.ifv.mobitopp.discretechoice.utility.UtilityEnumeration
 
-class CrossNestedStructure<R, A, P>(
-    content: CrossNestedDAG<R, P>.() -> Unit,
-) : CrossNestedStructureDataBuilder<R, A, P> {
+class CrossNestedStructure<A, C, P>(
+    content: CrossNestedDAG<A, P>.() -> Unit,
+) : CrossNestedStructureDataBuilder<A, P> {
 
-    private val leafsByOption: MutableMap<R, MutableList<NestStructure<P>.Leaf>> = mutableMapOf()
+    private val leafsByOption: MutableMap<A, MutableList<NestStructure<P>.Leaf>> = mutableMapOf()
     private val root: NestStructure<P>.Nest =
-        CrossNestedDAG<R, P>(leafsByOption).nest("root") {
+        CrossNestedDAG<A, P>(leafsByOption).nest("root") {
             content()
         }
 
-    override fun buildStructure() = CrossNestStructureData<R, A, P>(root, leafsByOption)
+    override fun buildStructure() = CrossNestStructureData<A, P>(root, leafsByOption)
 
     fun withUtility(
-        lambda: EnumeratedStructureBuilder<R, A, P>.() -> Unit,
-    ) = CrossNestedWithUtilities<R, A, P>(this, lambda)
+        lambda: EnumeratedStructureBuilder<A, C, P>.() -> Unit,
+    ) = CrossNestedWithUtilities<A, C, P>(this, lambda)
 }
 
 class CrossNestedDAG<R, P>(
@@ -51,14 +51,14 @@ class CrossNestedDAG<R, P>(
     }
 }
 
-class CrossNestedWithUtilities<A, G, P>(
-    private val structure: CrossNestedStructure<A, G, P>,
-    lambda: EnumeratedStructureBuilder<A, G, P>.() -> Unit,
-) : EnumeratedStructureBuilder<A, G, P>,
-    UtilityEnumerationBuilder<A, G, P>,
-    CrossNestedStructureDataBuilder<A, G, P> by structure {
+class CrossNestedWithUtilities<A, C, P>(
+    private val structure: CrossNestedStructure<A, C, P>,
+    lambda: EnumeratedStructureBuilder<A, C, P>.() -> Unit,
+) : EnumeratedStructureBuilder<A, C, P>,
+    UtilityEnumerationBuilder<A, C, P>,
+    CrossNestedStructureDataBuilder<A, P> by structure {
 
-    private var utilityFunctions: MutableMap<A, UtilityFunction<A, G, P>> = mutableMapOf()
+    private var utilityFunctions: MutableMap<A, UtilityFunction<A, C, P>> = mutableMapOf()
 
     init {
         lambda()
@@ -66,7 +66,7 @@ class CrossNestedWithUtilities<A, G, P>(
 
     override fun addUtilityFunctionByIdentifier(
         option: A,
-        utilityFunction: UtilityFunction<A, G, P>,
+        utilityFunction: UtilityFunction<A, C, P>,
     ) {
         require(!utilityFunctions.containsKey(option)) {
             "Duplicate: A utility function for $option has already been defined in this structure. " +
@@ -75,5 +75,5 @@ class CrossNestedWithUtilities<A, G, P>(
         utilityFunctions[option] = utilityFunction
     }
 
-    override fun build(): UtilityEnumeration<A, G, P> = MapBasedUtilityEnumeration<A, G, P>(utilityFunctions)
+    override fun build(): UtilityEnumeration<A, C, P> = MapBasedUtilityEnumeration<A, C, P>(utilityFunctions)
 }

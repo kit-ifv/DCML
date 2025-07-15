@@ -8,23 +8,23 @@ import edu.kit.ifv.mobitopp.discretechoice.utility.MapBasedUtilityEnumeration
 import edu.kit.ifv.mobitopp.discretechoice.utility.UtilityEnumeration
 
 
-class NestedStructure<A, G, P>(
+class NestedStructure<A, C, P>(
 
-    lambda: NestedTree<A, G, P>.() -> Unit,
+    lambda: NestedTree<A, C, P>.() -> Unit,
 ) :
-    UtilityEnumerationBuilder<A, G, P>,
-    NestedStructureDataBuilder<A, G, P> {
+    UtilityEnumerationBuilder<A, C, P>,
+    NestedStructureDataBuilder<A, C, P> {
 
     private val leafs: MutableMap<A, NestStructure<P>.Leaf> = mutableMapOf()
-    private val utilityFunctions: MutableMap<A, UtilityFunction<A, G, P>> = mutableMapOf()
+    private val utilityFunctions: MutableMap<A, UtilityFunction<A, C, P>> = mutableMapOf()
     private val root: NestStructure<P>.Nest =
-        NestedTree<A, G, P>(leafs, utilityFunctions).nest("root") {
+        NestedTree<A, C, P>(leafs, utilityFunctions).nest("root") {
             lambda()
         }
 
-    override fun build(): UtilityEnumeration<A, G, P> = MapBasedUtilityEnumeration<A, G, P>(utilityFunctions)
+    override fun build(): UtilityEnumeration<A, C, P> = MapBasedUtilityEnumeration<A, C, P>(utilityFunctions)
 
-    override fun buildStructure() = NestStructureData<A, G, P>(root, leafs.toMap())
+    override fun buildStructure() = NestStructureData<A, C, P>(root, leafs.toMap())
 }
 
 class NestedTree<A, G, P>(

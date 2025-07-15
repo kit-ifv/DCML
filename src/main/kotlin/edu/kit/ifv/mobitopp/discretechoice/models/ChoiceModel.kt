@@ -3,15 +3,7 @@ package edu.kit.ifv.mobitopp.discretechoice.models
 import kotlin.random.Random
 
 
-//TODO remove this, filtering has absolutely no purpose in the world of discrete choice modelling
 
-///**
-// * Convenience function, which constructs `FixedChoicesModel` out of any `ChoiceModel`.
-// * @param choices the choices the returned FixedChoicesModel has.
-// * @return a `FixedChoicesModel` with the given `choices` as its choices.
-// */
-//fun <A, R : Any> ChoiceModel<A, R>.fixed(choices: Set<R>): FixedChoicesModel<A, R> where A : ChoiceAlternative<R> =
-//    EnumeratedChoiceModel<R, A>(this, choices)
 
 /**
  * Interface of a ChoiceModel which has a non-changeable set of choices. Additionally, has `filterAndSelect` function,

@@ -10,15 +10,15 @@ import kotlin.math.ln
 /**
  * DistributionFunction which calculates distributions
  */
-class NestedLogit<R, A, P>(
-    private val structure: NestStructureData<R, A, P>,
-) : DistributionFunction<R, P> {
+class NestedLogit<A, C, P>(
+    private val structure: NestStructureData<A, C, P>,
+) : DistributionFunction<A, P> {
 
     /**
      * @param utilities Should only map choices, which are present in the `structure` of this NestedLogit. Will fail
      * if other options are mapped. Only mapped options get included in the calculation of probabilities.
      */
-    override fun calculateProbabilities(utilities: Map<R, Double>, parameters: P): Map<R, Double> {
+    override fun calculateProbabilities(utilities: Map<A, Double>, parameters: P): Map<A, Double> {
         val (root, leafs) = structure
 
         return synchronized(root) {
@@ -38,13 +38,13 @@ class NestedLogit<R, A, P>(
     }
 }
 
-data class NestStructureData<R, A, P>(
+data class NestStructureData<A, C, P>(
     val root: NestStructure<P>.Node,
-    val leafs: Map<R, NestStructure<P>.Leaf>,
+    val leafs: Map<A, NestStructure<P>.Leaf>,
 )
 
-fun interface NestedStructureDataBuilder<R, A, P> {
-    fun buildStructure(): NestStructureData<R, A, P>
+fun interface NestedStructureDataBuilder<A, C, P> {
+    fun buildStructure(): NestStructureData<A, C, P>
 }
 
 // TODO can we implement this stateless?

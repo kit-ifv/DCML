@@ -21,13 +21,13 @@ import edu.kit.ifv.mobitopp.discretechoice.UtilityFunction
 //    parameters
 // )
 
-interface UtilityEnumeration<A, G, P> : UtilityAssignment<A, G, P> {
+interface UtilityEnumeration<A, C, P> : UtilityAssignment<A, C, P> {
     val options: Set<A>
 }
 
-data class MapBasedUtilityEnumeration<A, G, P>(
-    private val map: Map<A, UtilityFunction<A, G, P>>,
-) : UtilityEnumeration<A, G, P> {
-    override fun getUtilityFunctionFor(alternative: A): UtilityFunction<A, G, P>? = map[alternative]
+data class MapBasedUtilityEnumeration<A, C, P>(
+    private val map: Map<A, UtilityFunction<A, C, P>>,
+) : UtilityEnumeration<A, C, P> {
+    override fun getUtilityFunctionFor(alternative: A): UtilityFunction<A, C, P>? = map[alternative]
     override val options: Set<A> get() = map.keys
 }

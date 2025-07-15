@@ -73,12 +73,12 @@ fun <R, A, P, B> B.nestedLogit(
         ).with(utility.options)
     }
 
-fun <R, A, P, B> B.crossNestedLogit(
+fun <A, G, P, B> B.crossNestedLogit(
     name: String,
-): EnumeratedDiscreteModelBuilder<R, A, P>
+): EnumeratedDiscreteModelBuilder<A, G, P>
         where
-        B : UtilityEnumerationBuilder<R, A, P>,
-        B : CrossNestedStructureDataBuilder<R, A, P> =
+        B : UtilityEnumerationBuilder<A, G, P>,
+        B : CrossNestedStructureDataBuilder<A, P> =
     EnumeratedDiscreteModelBuilder { parameters ->
 
         val utility = this.build()
