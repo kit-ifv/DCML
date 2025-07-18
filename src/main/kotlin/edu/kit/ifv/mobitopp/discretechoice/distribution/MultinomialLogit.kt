@@ -1,19 +1,19 @@
 package edu.kit.ifv.mobitopp.discretechoice.distribution
 
 
-import edu.kit.ifv.mobitopp.discretechoice.DistributionFunction
+import edu.kit.ifv.mobitopp.discretechoice.models.DistributionFunction
 import kotlin.math.exp
 
 /**
  * A Distribution Function using a soft-max / normalized exponential function approach to calculating probabilities out
- * of utility-values. Probability of option p_i := e^u_i / {sum of all utilities  e^u_k}
+ * of utilityassignment-values. Probability of option p_i := e^u_i / {sum of all utilities  e^u_k}
  *
- * __To have no unexpected behaviour, ensure that none of the utility values are greater than 710 and not all are
+ * __To have no unexpected behaviour, ensure that none of the utilityassignment values are greater than 710 and not all are
  * smaller than -744.__
  *
  * __Edge cases:__
  *
- * If utilities greater than 710 exist, each option with a utility >= 710 gets an equal probability, all others get 0. (
+ * If utilities greater than 710 exist, each option with a utilityassignment >= 710 gets an equal probability, all others get 0. (
  * because `exp(710) == Double.POSITIVE_INFINITY`)
  *
  * If utilities are all  <=-745 each option gets the same probability. (Because exp(-745) == 0.0 leading division with

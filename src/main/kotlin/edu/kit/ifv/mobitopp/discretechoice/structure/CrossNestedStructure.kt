@@ -1,12 +1,12 @@
 package edu.kit.ifv.mobitopp.discretechoice.structure
 
 
-import edu.kit.ifv.mobitopp.discretechoice.UtilityFunction
+import edu.kit.ifv.mobitopp.discretechoice.models.UtilityFunction
 import edu.kit.ifv.mobitopp.discretechoice.distribution.CrossNestStructureData
 import edu.kit.ifv.mobitopp.discretechoice.distribution.CrossNestedStructureDataBuilder
 import edu.kit.ifv.mobitopp.discretechoice.distribution.NestStructure
-import edu.kit.ifv.mobitopp.discretechoice.utility.MapBasedUtilityEnumeration
-import edu.kit.ifv.mobitopp.discretechoice.utility.UtilityEnumeration
+import edu.kit.ifv.mobitopp.discretechoice.utilityassignment.MapBasedUtilityEnumeration
+import edu.kit.ifv.mobitopp.discretechoice.utilityassignment.UtilityEnumeration
 
 class CrossNestedStructure<A, C, P>(
     content: CrossNestedDAG<A, P>.() -> Unit,
@@ -25,22 +25,22 @@ class CrossNestedStructure<A, C, P>(
     ) = CrossNestedWithUtilities<A, C, P>(this, lambda)
 }
 
-class CrossNestedDAG<R, P>(
-    val leafsByOption: MutableMap<R, MutableList<NestStructure<P>.Leaf>>,
-) : NestStructureBuilder<R, P, CrossNestedDAG<R, P>> {
+class CrossNestedDAG<A, P>(
+    val leafsByOption: MutableMap<A, MutableList<NestStructure<P>.Leaf>>,
+) : NestStructureBuilder<A, P, CrossNestedDAG<A, P>> {
 
     private val children: MutableList<NestStructure<P>.Node> = mutableListOf()
 
-    override fun new(): CrossNestedDAG<R, P> = CrossNestedDAG<R, P>(leafsByOption = leafsByOption)
+    override fun new(): CrossNestedDAG<A, P> = CrossNestedDAG<A, P>(leafsByOption = leafsByOption)
     override fun children(): List<NestStructure<P>.Node> = children
     override fun addNest(nest: NestStructure<P>.Nest) {
         children.add(nest)
     }
 
-    fun option(option: R, name: String = option.toString(), alpha: Double = 1.0) =
+    fun option(option: A, name: String = option.toString(), alpha: Double = 1.0) =
         option(option, name) { alpha }
 
-    fun option(option: R, name: String = option.toString(), alpha: P.() -> Double): NestStructure<P>.Leaf {
+    fun option(option: A, name: String = option.toString(), alpha: P.() -> Double): NestStructure<P>.Leaf {
         val element = NestStructure<P>().Leaf(extractAlphaParameter = alpha, name = name)
         children.add(element)
         val globalEntries = leafsByOption.getOrPut(option) {
@@ -69,8 +69,8 @@ class CrossNestedWithUtilities<A, C, P>(
         utilityFunction: UtilityFunction<A, C, P>,
     ) {
         require(!utilityFunctions.containsKey(option)) {
-            "Duplicate: A utility function for $option has already been defined in this structure. " +
-                    "Current elements ${utilityFunctions.keys} already have a utility function associated. "
+            "Duplicate: A utilityassignment function for $option has already been defined in this structure. " +
+                    "Current elements ${utilityFunctions.keys} already have a utilityassignment function associated. "
         }
         utilityFunctions[option] = utilityFunction
     }

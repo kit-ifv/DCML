@@ -1,7 +1,7 @@
-package edu.kit.ifv.mobitopp.discretechoice.utility
+package edu.kit.ifv.mobitopp.discretechoice.utilityassignment
 
-import edu.kit.ifv.mobitopp.discretechoice.UtilityAssignment
-import edu.kit.ifv.mobitopp.discretechoice.UtilityFunction
+import edu.kit.ifv.mobitopp.discretechoice.models.UtilityAssignment
+import edu.kit.ifv.mobitopp.discretechoice.models.UtilityFunction
 
 
 data class Rule<A, C, P>(

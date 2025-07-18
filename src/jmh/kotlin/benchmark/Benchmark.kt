@@ -2,7 +2,7 @@ package benchmark
 
 
 import edu.kit.ifv.mobitopp.discretechoice.structure.DiscreteStructure
-import edu.kit.ifv.mobitopp.discretechoice.utility.multinomialLogit
+import edu.kit.ifv.mobitopp.discretechoice.utilityassignment.multinomialLogit
 import org.openjdk.jmh.annotations.Benchmark
 import org.openjdk.jmh.annotations.BenchmarkMode
 import org.openjdk.jmh.annotations.Mode

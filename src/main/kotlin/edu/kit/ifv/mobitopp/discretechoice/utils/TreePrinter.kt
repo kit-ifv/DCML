@@ -1,4 +1,4 @@
-package edu.kit.ifv.mobitopp.discretechoice.utility
+package edu.kit.ifv.mobitopp.discretechoice.utils
 
 /**
  * Print the given treelike structure with pretty indentation on the console.

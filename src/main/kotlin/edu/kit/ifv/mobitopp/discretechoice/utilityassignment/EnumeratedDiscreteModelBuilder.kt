@@ -1,7 +1,7 @@
-package edu.kit.ifv.mobitopp.discretechoice.utility
+package edu.kit.ifv.mobitopp.discretechoice.utilityassignment
 
-import edu.kit.ifv.mobitopp.discretechoice.DiscreteChoiceModel
-import edu.kit.ifv.mobitopp.discretechoice.EnumeratedDiscreteChoiceModel
+import edu.kit.ifv.mobitopp.discretechoice.models.DiscreteChoiceModel
+import edu.kit.ifv.mobitopp.discretechoice.models.EnumeratedDiscreteChoiceModel
 import edu.kit.ifv.mobitopp.discretechoice.distribution.CrossNestedLogit
 import edu.kit.ifv.mobitopp.discretechoice.distribution.CrossNestedStructureDataBuilder
 import edu.kit.ifv.mobitopp.discretechoice.distribution.MultinomialLogit
@@ -21,9 +21,9 @@ fun interface EnumeratedDiscreteModelBuilder<A, C, P> {
     fun build(parameters: P): EnumeratedDiscreteChoiceModel<A, C, P>
 }
 
-fun <R, A, P> UtilityAssignmentBuilder<R, A, P>.openMultinomialLogit(
+fun <A, C, P> UtilityAssignmentBuilder<A, C, P>.openMultinomialLogit(
     name: String,
-): DiscreteModelBuilder<R, A, P> =
+): DiscreteModelBuilder<A, C, P> =
     DiscreteModelBuilder { parameters ->
 
         DiscreteChoiceModel(
@@ -35,10 +35,10 @@ fun <R, A, P> UtilityAssignmentBuilder<R, A, P>.openMultinomialLogit(
         )
     }
 
-fun <R, A, P> UtilityAssignmentBuilder<R, A, P>.multinomialLogit(
+fun <A, C, P> UtilityAssignmentBuilder<A, C, P>.multinomialLogit(
     name: String,
-    choices: Set<R>,
-): EnumeratedDiscreteModelBuilder<R, A, P> =
+    choices: Set<A>,
+): EnumeratedDiscreteModelBuilder<A, C, P> =
     EnumeratedDiscreteModelBuilder { parameters ->
 
         DiscreteChoiceModel(
@@ -50,21 +50,21 @@ fun <R, A, P> UtilityAssignmentBuilder<R, A, P>.multinomialLogit(
         ).with(choices)
     }
 
-fun <R, A, P> UtilityEnumerationBuilder<R, A, P>.multinomialLogit(
+fun <A, C, P> UtilityEnumerationBuilder<A, C, P>.multinomialLogit(
     name: String,
-): EnumeratedDiscreteModelBuilder<R, A, P> =
+): EnumeratedDiscreteModelBuilder<A, C, P> =
     this.multinomialLogit(name, this.build().options)
 
-fun <R, A, P, B> B.nestedLogit(
+fun <A, C, P, B> B.nestedLogit(
     name: String,
-): EnumeratedDiscreteModelBuilder<R, A, P>
-        where B : UtilityEnumerationBuilder<R, A, P>, B : NestedStructureDataBuilder<R, A, P> =
+): EnumeratedDiscreteModelBuilder<A, C, P>
+        where B : UtilityEnumerationBuilder<A, C, P>, B : NestedStructureDataBuilder<A, C, P> =
     EnumeratedDiscreteModelBuilder { parameters ->
 
         val utility = this.build()
         val structure = this.buildStructure()
 
-        DiscreteChoiceModel<R, A, P>(
+        DiscreteChoiceModel<A, C, P>(
             name = name,
             utilityAssignment = utility,
             distributionFunction = NestedLogit(structure),
@@ -73,11 +73,11 @@ fun <R, A, P, B> B.nestedLogit(
         ).with(utility.options)
     }
 
-fun <A, G, P, B> B.crossNestedLogit(
+fun <A, C, P, B> B.crossNestedLogit(
     name: String,
-): EnumeratedDiscreteModelBuilder<A, G, P>
+): EnumeratedDiscreteModelBuilder<A, C, P>
         where
-        B : UtilityEnumerationBuilder<A, G, P>,
+        B : UtilityEnumerationBuilder<A, C, P>,
         B : CrossNestedStructureDataBuilder<A, P> =
     EnumeratedDiscreteModelBuilder { parameters ->
 

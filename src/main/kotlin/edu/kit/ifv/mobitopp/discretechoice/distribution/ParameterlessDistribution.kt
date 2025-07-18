@@ -1,7 +1,7 @@
 package edu.kit.ifv.mobitopp.discretechoice.distribution
 
 /**
- * Some distribution functions do not use the parameter object when calculating the utility (namely [MultinomialLogit])
+ * Some distribution functions do not use the parameter object when calculating the utilityassignment (namely [MultinomialLogit])
  */
 fun interface ParameterlessDistribution<X> {
     fun calculateProbabilities(utilities: Map<X, Double>): Map<X, Double>

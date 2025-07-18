@@ -1,8 +1,8 @@
-package discreteChoice.discreteChoice.discreteChoice.edu.kit.ifv.mobitopp.discretechoice.distribution
+package edu.kit.ifv.mobitopp.discretechoice.distribution
 
-import edu.kit.ifv.mobitopp.discretechoice.DiscreteChoiceModel
+import edu.kit.ifv.mobitopp.discretechoice.models.DiscreteChoiceModel
 import edu.kit.ifv.mobitopp.discretechoice.structure.DiscreteStructure
-import edu.kit.ifv.mobitopp.discretechoice.utility.multinomialLogit
+import edu.kit.ifv.mobitopp.discretechoice.utilityassignment.multinomialLogit
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -48,7 +48,7 @@ class LogitModelTest {
 
     private val selection = setOf(1, 2, 3)
     private val random =
-        _root_ide_package_.discreteChoice.discreteChoice.discreteChoice.edu.kit.ifv.mobitopp.discretechoice.distribution.ControlledRandom(
+        ControlledRandom(
             1
         )
     @Test

@@ -1,7 +1,6 @@
-package discreteChoice.distribution
+package edu.kit.ifv.mobitopp.discretechoice.distribution
 
 
-import edu.kit.ifv.mobitopp.discretechoice.distribution.MultinomialLogit
 import org.junit.jupiter.api.Test
 import kotlin.assert
 

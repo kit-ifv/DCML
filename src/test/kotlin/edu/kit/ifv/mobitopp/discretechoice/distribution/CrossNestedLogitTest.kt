@@ -1,8 +1,8 @@
-package discreteChoice.discreteChoice.discreteChoice.edu.kit.ifv.mobitopp.discretechoice.distribution
+package edu.kit.ifv.mobitopp.discretechoice.distribution
 
-import edu.kit.ifv.mobitopp.discretechoice.DiscreteChoiceModel
+import edu.kit.ifv.mobitopp.discretechoice.models.DiscreteChoiceModel
 import edu.kit.ifv.mobitopp.discretechoice.structure.CrossNestedStructure
-import edu.kit.ifv.mobitopp.discretechoice.utility.crossNestedLogit
+import edu.kit.ifv.mobitopp.discretechoice.utilityassignment.crossNestedLogit
 
 import org.junit.jupiter.api.assertThrows
 import kotlin.test.Test
@@ -36,7 +36,7 @@ class CrossNestedLogitTest {
             option(2) {
                 0.0
             }
-        }.crossNestedLogit("SimpleCrossNestedModelForTesting").build(_root_ide_package_.discreteChoice.discreteChoice.discreteChoice.edu.kit.ifv.mobitopp.discretechoice.distribution.Parameters()).model
+        }.crossNestedLogit("SimpleCrossNestedModelForTesting").build(Parameters()).model
 
         crossNestedModel.castProbabilities(1).let {
             assertEquals(it.values.sum(), 1.0)
@@ -83,7 +83,7 @@ class CrossNestedLogitTest {
             option(3) {
                 u3
             }
-        }.crossNestedLogit("CrossNestedModelForTesting").build(_root_ide_package_.discreteChoice.discreteChoice.discreteChoice.edu.kit.ifv.mobitopp.discretechoice.distribution.Parameters()).model
+        }.crossNestedLogit("CrossNestedModelForTesting").build(Parameters()).model
 
         crossNestedModel.castProbabilities(1, 2, 3).let {
             assertEquals(it.values.sum(), 1.0)
@@ -122,7 +122,7 @@ class CrossNestedLogitTest {
             option(2) {
                 0.0
             }
-        }.crossNestedLogit("CrossNestedModelForTestingLambda").build(_root_ide_package_.discreteChoice.discreteChoice.discreteChoice.edu.kit.ifv.mobitopp.discretechoice.distribution.Parameters()).model
+        }.crossNestedLogit("CrossNestedModelForTestingLambda").build(Parameters()).model
 
         crossNestedModel.castProbabilities(1, 2).let {
             assertEquals(it.values.sum(), 1.0)

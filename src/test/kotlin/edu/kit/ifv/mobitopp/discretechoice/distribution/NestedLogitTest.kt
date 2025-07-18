@@ -1,10 +1,9 @@
 package edu.kit.ifv.mobitopp.discretechoice.distribution
 
 import edu.kit.ifv.mobitopp.discretechoice.structure.NestedStructure
-import edu.kit.ifv.mobitopp.discretechoice.utility.nestedLogit
+import edu.kit.ifv.mobitopp.discretechoice.utilityassignment.nestedLogit
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import kotlin.collections.get
 import kotlin.test.assertEquals
 
 class NestedLogitTest {

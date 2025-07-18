@@ -1,6 +1,6 @@
 package edu.kit.ifv.mobitopp.discretechoice.distribution
 
-import edu.kit.ifv.mobitopp.discretechoice.DistributionFunction
+import edu.kit.ifv.mobitopp.discretechoice.models.DistributionFunction
 
 
 class CrossNestedLogit<A, P>(
@@ -9,7 +9,7 @@ class CrossNestedLogit<A, P>(
 
     override fun calculateProbabilities(utilities: Map<A, Double>, parameters: P): Map<A, Double> {
         require(utilities.isNotEmpty()) {
-            "Received empty utility map!"
+            "Received empty utilityassignment map!"
         }
 
         val root = structure.root

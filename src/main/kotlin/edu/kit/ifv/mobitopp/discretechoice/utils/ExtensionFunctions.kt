@@ -1,5 +1,7 @@
-package edu.kit.ifv.mobitopp.discretechoice.utility
+package edu.kit.ifv.mobitopp.discretechoice.utils
 
+import edu.kit.ifv.mobitopp.discretechoice.utils.cumulativeSum
+import edu.kit.ifv.mobitopp.discretechoice.utils.toIndex
 import kotlin.math.sign
 
 inline fun <K, V> Iterable<K>.associateWithNotNull(
@@ -76,4 +78,13 @@ fun Int.toIndex(): Int {
     } else {
         this
     }
+}
+
+/**
+ * These functions should reside in the package where utilityassignment functions are built, so that they are available
+ * whereever someone creates a utilityassignment function, without needing to import.
+ */
+internal inline val Boolean.D get() = if (this) 1.0 else 0.0
+internal operator fun Boolean.times(double: Double): Double {
+    return this.D * double
 }

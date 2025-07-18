@@ -1,8 +1,8 @@
 package edu.kit.ifv.mobitopp.discretechoice.distribution
 
 
-import edu.kit.ifv.mobitopp.discretechoice.DistributionFunction
-import edu.kit.ifv.mobitopp.discretechoice.utility.printAsTree
+import edu.kit.ifv.mobitopp.discretechoice.models.DistributionFunction
+import edu.kit.ifv.mobitopp.discretechoice.utils.printAsTree
 import java.util.PriorityQueue
 import kotlin.math.exp
 import kotlin.math.ln
@@ -88,7 +88,7 @@ class AssociatedSituation<A, P>(
     val probability get() = leaf.probability
 
     /**
-     * Set the utility of the leaf to this.utility and marks it and the parent as "relevantForTheCalculation".
+     * Set the utilityassignment of the leaf to this.utilityassignment and marks it and the parent as "relevantForTheCalculation".
      */
     fun initializeUtility(): NestStructure<P>.Nest? {
         return leaf.initializeUtility(utility)
@@ -112,12 +112,12 @@ class NestStructure<P> {
 
         /**
          * Level represents the depth of the alternative in the Nest Structure, lower level nests need to
-         * be calculated for their utility first.
+         * be calculated for their utilityassignment first.
          */
         abstract val level: Int
 
         /**
-         * If set to false, this node will get ignored in utility and probability calculations.
+         * If set to false, this node will get ignored in utilityassignment and probability calculations.
          */
         var relevantForCalculation = false
         abstract var parent: Nest?
@@ -128,7 +128,7 @@ class NestStructure<P> {
         open fun calculateProbability(parameters: P) {
         }
 
-        fun treePrint(): Unit = printAsTree(
+        fun treePrint(): Unit = _root_ide_package_.edu.kit.ifv.mobitopp.discretechoice.utils.printAsTree(
             root = this,
             label = { it.toString() },
             getChildren = { it.children() }
@@ -155,7 +155,7 @@ class NestStructure<P> {
         }
 
         /**
-         * Set utility of this leaf and mark this leaf and this.parent as relevant for the calculation.
+         * Set utilityassignment of this leaf and mark this leaf and this.parent as relevant for the calculation.
          * @return the Parent of this Leaf.
          */
         fun initializeUtility(utility: Double): Nest? {
@@ -176,13 +176,13 @@ class NestStructure<P> {
     /**
      * A non-abstract Node __with__ children.
      * @param extractLambdaParameter provider function for tuning parameter of the softmax. Lambda defines how much
-     * probability should be given to the highest utility and how much to lower utility values.
+     * probability should be given to the highest utilityassignment and how much to lower utilityassignment values.
      *
      * lambda = 1 is the normal softmax.
      *
      * lambda > 1 Means more even distribution of probability.
      *
-     * lambda < 1 leads to more probability given to the option with the highest utility value.
+     * lambda < 1 leads to more probability given to the option with the highest utilityassignment value.
      *
      * __Lambda has to always be > 0.__
      */
@@ -196,14 +196,14 @@ class NestStructure<P> {
         override val level = childNodes.maxOf { it.level } + 1
 
         /**
-         * @property maxUtility keep track of the highest utility found in the children, to subtract that value from
-         * each utility calculation, to turn big utilities to small numbers, and numeric problems with exp and ln()
+         * @property maxUtility keep track of the highest utilityassignment found in the children, to subtract that value from
+         * each utilityassignment calculation, to turn big utilities to small numbers, and numeric problems with exp and ln()
          * from a potential infinity to a 0.0 which is better handleable.
          */
         private var maxUtility = 0.0
 
         /**
-         * Sum of all exp(utility) of the utility of all children.
+         * Sum of all exp(utilityassignment) of the utilityassignment of all children.
          */
         private var sum = 0.0
 
@@ -220,7 +220,7 @@ class NestStructure<P> {
         }
 
         /**
-         * Calculates the utility of this node. Sets `this.sum`, `this.utility` and `this.maxUtility`
+         * Calculates the utilityassignment of this node. Sets `this.sum`, `this.utilityassignment` and `this.maxUtility`
          * @return the parent of this node.
          */
         fun calculateUtility(parameters: P): Nest? {
@@ -234,7 +234,7 @@ class NestStructure<P> {
                 .map { ln(it.extractAlphaParameter(parameters)) + it.utility }
                 .sumOf { exp((it - maxUtility) / lambda) }
 
-            utility = maxUtility + lambda * ln(x) // this utility is the sum of the utility of the children. The
+            utility = maxUtility + lambda * ln(x) // this utilityassignment is the sum of the utilityassignment of the children. The
             // maxUtility and lambda get canceled out in later calculations.
             sum = x
             return parent
@@ -246,7 +246,7 @@ class NestStructure<P> {
          *
          * All probabilities of the (relevantForCalculation) children will sum up to `this.probability`.
          *
-         * Probability of the children get distributed using the (lambda tuned) softmax of their utility values.
+         * Probability of the children get distributed using the (lambda tuned) softmax of their utilityassignment values.
          */
         override fun calculateProbability(parameters: P) {
             val lambda = extractLambdaParameter(parameters)
