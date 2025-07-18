@@ -84,6 +84,6 @@ class LogitModelTest {
     }
     private fun select(randomValue: Double? = null, injection: Map<Int, (Double) -> Double>): Int {
         random.randomNumber = randomValue
-        return context(Unit) {discreteChoiceModel.selectInjected(selection, injection, random)}
+        return context(Unit, random) {discreteChoiceModel.selectInjected(selection, injection)}
     }
 }
