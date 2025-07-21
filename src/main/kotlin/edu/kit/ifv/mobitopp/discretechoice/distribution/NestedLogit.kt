@@ -1,8 +1,7 @@
 package edu.kit.ifv.mobitopp.discretechoice.distribution
 
 
-import edu.kit.ifv.mobitopp.discretechoice.models.DistributionFunction
-import edu.kit.ifv.mobitopp.discretechoice.utils.printAsTree
+import edu.kit.ifv.mobitopp.discretechoice.distribution.DistributionFunction
 import java.util.PriorityQueue
 import kotlin.math.exp
 import kotlin.math.ln

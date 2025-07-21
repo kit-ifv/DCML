@@ -1,8 +1,8 @@
 package edu.kit.ifv.mobitopp.discretechoice.utilityassignment
 
 import edu.kit.ifv.mobitopp.discretechoice.models.DiscreteChoiceModel
-import edu.kit.ifv.mobitopp.discretechoice.models.SelectionFunction
-import edu.kit.ifv.mobitopp.discretechoice.models.UtilityAssignment
+import edu.kit.ifv.mobitopp.discretechoice.selection.SelectionFunction
+import edu.kit.ifv.mobitopp.discretechoice.utilityassignment.UtilityAssignment
 import edu.kit.ifv.mobitopp.discretechoice.models.UtilityFunction
 import edu.kit.ifv.mobitopp.discretechoice.distribution.MultinomialLogit
 import edu.kit.ifv.mobitopp.discretechoice.selection.RandomWeightedSelect

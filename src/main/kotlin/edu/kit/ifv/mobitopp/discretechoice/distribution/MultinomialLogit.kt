@@ -1,7 +1,7 @@
 package edu.kit.ifv.mobitopp.discretechoice.distribution
 
 
-import edu.kit.ifv.mobitopp.discretechoice.models.DistributionFunction
+import edu.kit.ifv.mobitopp.discretechoice.distribution.DistributionFunction
 import kotlin.math.exp
 
 /**

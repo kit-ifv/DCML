@@ -8,10 +8,10 @@ class RuleBasedStructureTest {
     @Test
     fun correctConstruction() {
         val structure = RuleBasedStructure<Int, Unit, Unit> {
-            rule({it % 2 == 0}) {
+            rule({it % 2 == 0}) {it, _ ->
                 -it.toDouble()
             }
-            rule({it % 2 == 1}) {
+            rule({it % 2 == 1}) {it, _ ->
                 it.toDouble()
             }
         }

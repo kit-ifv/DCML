@@ -32,7 +32,7 @@ private class ControlledRandom(seed: Int): Random() {
 
 }
 class LogitModelTest {
-    private val discreteChoiceModel: DiscreteChoiceModel<Int, Unit, Unit> = DiscreteStructure<Int, Unit, Unit> {
+    private val discreteChoiceModel = DiscreteStructure<Int, Unit, Unit> {
                 option(1) {
 
                     0.0
@@ -44,7 +44,7 @@ class LogitModelTest {
                     0.0
                 }
 
-            }.multinomialLogit("Test model").build(Unit).model
+            }.multinomialLogit("Test model").build(Unit)
 
     private val selection = setOf(1, 2, 3)
     private val random =
@@ -78,7 +78,7 @@ class LogitModelTest {
         }.multinomialLogit("Test model").build(Params())
 
         val output = context(1 to .05) {
-            choiceModel.model.probabilities(setOf(1, 2))
+            choiceModel.probabilities(setOf(1, 2))
         }
         println(output)
     }

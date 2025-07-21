@@ -1,6 +1,6 @@
 package edu.kit.ifv.mobitopp.discretechoice.structure
 
-import edu.kit.ifv.mobitopp.discretechoice.models.UtilityAssignment
+import edu.kit.ifv.mobitopp.discretechoice.utilityassignment.UtilityAssignment
 import edu.kit.ifv.mobitopp.discretechoice.models.UtilityFunction
 import edu.kit.ifv.mobitopp.discretechoice.utilityassignment.MapBasedUtilityEnumeration
 import edu.kit.ifv.mobitopp.discretechoice.utilityassignment.Rule

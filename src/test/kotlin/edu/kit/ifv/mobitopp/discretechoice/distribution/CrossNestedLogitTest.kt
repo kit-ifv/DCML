@@ -1,6 +1,7 @@
 package edu.kit.ifv.mobitopp.discretechoice.distribution
 
 import edu.kit.ifv.mobitopp.discretechoice.models.DiscreteChoiceModel
+import edu.kit.ifv.mobitopp.discretechoice.models.UtilityBasedChoiceModel
 import edu.kit.ifv.mobitopp.discretechoice.structure.CrossNestedStructure
 import edu.kit.ifv.mobitopp.discretechoice.utilityassignment.crossNestedLogit
 
@@ -14,7 +15,7 @@ private data class Parameters(val base: Double = 1.0)
 
 class CrossNestedLogitTest {
 
-    private fun DiscreteChoiceModel<Int, Unit, Parameters>.castProbabilities(
+    private fun UtilityBasedChoiceModel<Int, Unit>.castProbabilities(
         vararg targets: Int
     ): Map<Int, Double> {
 
@@ -36,7 +37,7 @@ class CrossNestedLogitTest {
             option(2) {
                 0.0
             }
-        }.crossNestedLogit("SimpleCrossNestedModelForTesting").build(Parameters()).model
+        }.crossNestedLogit("SimpleCrossNestedModelForTesting").build(Parameters())
 
         crossNestedModel.castProbabilities(1).let {
             assertEquals(it.values.sum(), 1.0)
@@ -83,7 +84,7 @@ class CrossNestedLogitTest {
             option(3) {
                 u3
             }
-        }.crossNestedLogit("CrossNestedModelForTesting").build(Parameters()).model
+        }.crossNestedLogit("CrossNestedModelForTesting").build(Parameters())
 
         crossNestedModel.castProbabilities(1, 2, 3).let {
             assertEquals(it.values.sum(), 1.0)
@@ -122,7 +123,7 @@ class CrossNestedLogitTest {
             option(2) {
                 0.0
             }
-        }.crossNestedLogit("CrossNestedModelForTestingLambda").build(Parameters()).model
+        }.crossNestedLogit("CrossNestedModelForTestingLambda").build(Parameters())
 
         crossNestedModel.castProbabilities(1, 2).let {
             assertEquals(it.values.sum(), 1.0)

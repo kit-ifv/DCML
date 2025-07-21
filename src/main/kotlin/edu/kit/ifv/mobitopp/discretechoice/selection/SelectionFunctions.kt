@@ -1,7 +1,7 @@
 package edu.kit.ifv.mobitopp.discretechoice.selection
 
 
-import edu.kit.ifv.mobitopp.discretechoice.models.SelectionFunction
+import edu.kit.ifv.mobitopp.discretechoice.selection.SelectionFunction
 import edu.kit.ifv.mobitopp.discretechoice.utils.select
 import kotlin.random.Random
 

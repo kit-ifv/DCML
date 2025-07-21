@@ -1,13 +1,12 @@
 package edu.kit.ifv.mobitopp.discretechoice.utilityassignment
 
-import edu.kit.ifv.mobitopp.discretechoice.models.DiscreteChoiceModel
-import edu.kit.ifv.mobitopp.discretechoice.models.EnumeratedDiscreteChoiceModel
 import edu.kit.ifv.mobitopp.discretechoice.distribution.CrossNestedLogit
 import edu.kit.ifv.mobitopp.discretechoice.distribution.CrossNestedStructureDataBuilder
 import edu.kit.ifv.mobitopp.discretechoice.distribution.MultinomialLogit
 import edu.kit.ifv.mobitopp.discretechoice.distribution.NestedLogit
 import edu.kit.ifv.mobitopp.discretechoice.distribution.NestedStructureDataBuilder
-
+import edu.kit.ifv.mobitopp.discretechoice.models.DiscreteChoiceModel
+import edu.kit.ifv.mobitopp.discretechoice.models.FixedChoiceModel
 import edu.kit.ifv.mobitopp.discretechoice.selection.RandomWeightedSelect
 import edu.kit.ifv.mobitopp.discretechoice.structure.UtilityAssignmentBuilder
 import edu.kit.ifv.mobitopp.discretechoice.structure.UtilityEnumerationBuilder
@@ -18,7 +17,7 @@ fun interface DiscreteModelBuilder<A, C, P> {
 }
 
 fun interface EnumeratedDiscreteModelBuilder<A, C, P> {
-    fun build(parameters: P): EnumeratedDiscreteChoiceModel<A, C, P>
+    fun build(parameters: P): FixedChoiceModel<A, C>
 }
 
 fun <A, C, P> UtilityAssignmentBuilder<A, C, P>.openMultinomialLogit(

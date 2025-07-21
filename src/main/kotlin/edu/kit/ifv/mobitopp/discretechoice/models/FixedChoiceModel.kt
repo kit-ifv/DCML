@@ -2,23 +2,26 @@ package edu.kit.ifv.mobitopp.discretechoice.models
 
 import kotlin.random.Random
 
-/**
- * Interface of a ChoiceModel which has a non-changeable set of choices. Since the choices are known beforehand, the
- * simple select function can be provided
- *
- */
-interface FixedChoiceModel<A, C> : UtilityBasedChoiceModel<A, C> {
-    val choices: Set<A>
-
-    context(_:C, _: Random)
-    fun select() = select(choices)
-}
-
-fun <A, C> UtilityBasedChoiceModel<A, C>.fixed(choices: Set<A>): FixedChoiceModel<A, C> {
-    return FixedChoiceWrapper(this, choices)
-}
-
-data class FixedChoiceWrapper<A, C>(
+data class FixedChoiceModel<A, C>(
     val original: UtilityBasedChoiceModel<A, C>,
-    override val choices: Set<A>,
-) : FixedChoiceModel<A, C>, UtilityBasedChoiceModel<A, C> by original
+    val choices: Set<A>,
+): UtilityBasedChoiceModel<A, C> by original {
+
+    context(_: C, random: Random)
+    fun select(): A = original.select(choices)
+    override val name: String = original.name
+
+    /**
+     * @param random some random generator.
+     * @param choices the set of alternatives one is chosen from.
+     * @return one chosen alternative
+     */
+    context(_: C, _: Random)
+    override fun select(choices: Set<A>): A {
+        return original.select(choices)
+    }
+    context(_: C) fun probabilities() = original.probabilities(choices)
+    context(_: C) fun utilities() = original.utilities(choices)
+
+    override fun addFilter(filter: ChoiceFilter<A, C>) = FilteredFixedChoiceModel<A, C>(original, choices, filter)
+}

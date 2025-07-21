@@ -24,7 +24,7 @@ class NestedLogitTest {
 
     @Test
     fun redBusBlueBus() {
-        val model = choiceModel.build(identical).model
+        val model = choiceModel.build(identical)
         val result = context(Unit) { model.probabilities(Options.ALL_VALID) }
         assertEquals(result[Options.RED_BUS], 0.25)
         assertEquals(result[Options.BLUE_BUS], 0.25)
@@ -33,7 +33,7 @@ class NestedLogitTest {
 
     @Test
     fun invariantRedBus() {
-        val model = choiceModel.build(different).model
+        val model = choiceModel.build(different)
         val result = context(Unit) { model.probabilities(Options.ALL_VALID) }
         assertEquals(result[Options.RED_BUS], 1.0 / 3)
         assertEquals(result[Options.BLUE_BUS], 1.0 / 3)
@@ -85,7 +85,7 @@ class NestedLogitTest {
                 RedbusParameters(
                     1.0
                 )
-            ).model
+            )
             context(Unit) {
                 dcm.probabilities(Options.ALL_VALID + Options.OTHER_ILLEGAL_OPTION)
             }

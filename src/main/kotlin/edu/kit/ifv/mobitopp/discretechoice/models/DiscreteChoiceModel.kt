@@ -1,49 +1,9 @@
 package edu.kit.ifv.mobitopp.discretechoice.models
 
+import edu.kit.ifv.mobitopp.discretechoice.distribution.DistributionFunction
+import edu.kit.ifv.mobitopp.discretechoice.selection.SelectionFunction
+import edu.kit.ifv.mobitopp.discretechoice.utilityassignment.UtilityAssignment
 import kotlin.random.Random
-
-/**
- * A utilityassignment function takes in an alternative and a parameter object and returns the utilityassignment of said alternative.
- */
-fun interface UtilityFunction<A, C, P> {
-    fun calculateUtility(alternative: A, characteristics: C, parameterObject: P): Double
-}
-
-/**
- * Functional interface defining the higher order function (function returning a function :]) `getUtilityFunctionFor`,
- * which returns a `UtilityFunction` for the given `alternative`. Independent of other possibly existing alternatives.
- * (Also defines a getter function, which does the same as `getUtilityFunctionFor(alternative)`.)
- * @property P the type of the parameters. The utilityassignment always gets assigned based on concrete instance values (age=25,
- * position=Karlsruhe... whatever). `P` is the type which contains these concrete values. It's the type the returned
- * Utility function expects.
- */
-fun interface UtilityAssignment<A, C, P> {
-    fun getUtilityFunctionFor(alternative: A): UtilityFunction<A, C, P>?
-    operator fun get(alternative: A) = getUtilityFunctionFor(alternative)
-}
-
-/**
- * A distribution function takes in a map, which contains each choosable object(alternative) with their associated
- * utilityassignment functions already calculated. Also takes a parameter object and returns a map of calculated probabilities
- * from the given alternatives.
- */
-fun interface DistributionFunction<A, P> {
-    fun calculateProbabilities(utilities: Map<A, Double>, parameters: P): Map<A, Double>
-}
-
-/**
- * A functional interface defining a structure for going from probabilities to a concrete selected element.
- * @property X type of the objects to be selected.
- * @param calculateSelection the provided function, which executes the selection on some `options`.
- * @return one of the objects of type `X` from the `options`.
- */
-fun interface SelectionFunction<X> {
-    /**
-     * @param options a map, mapping each possible object to its probability. (All probabilities have to sum up to 1?)
-     * @return one of the `X` objects present in `options`.
-     */
-    fun calculateSelection(options: Map<X, Double>, random: Random): X
-}
 
 /**
  * Basic structure of a `ChoiceModel` for a discrete situation.
@@ -85,7 +45,7 @@ data class DiscreteChoiceModel<A, C, P>(
      * @return The selected alternative after applying the modified utilities.
      */
     context(_: C, random: Random)
-    fun selectInjected(choices: Set<A>, injections: Map<A, (Double) -> Double>): A {
+    override fun selectInjected(choices: Set<A>, injections: Map<A, (Double) -> Double>): A {
         val modifiedUtilities = utilities(choices).mapValues { (alternative, utility) ->
             val injection = injections[alternative] ?: { it }
             injection(utility)
@@ -120,33 +80,8 @@ data class DiscreteChoiceModel<A, C, P>(
      * @return an EnumeratedDiscreteChoiceModel, which behaves like this model, but works on the given `choices`.
      */
     fun with(choices: Set<A>) =
-        EnumeratedDiscreteChoiceModel(
+        FixedChoiceModel(
             this,
             choices
         )
-}
-
-/**
- * A ChoiceModel based on another DiscreteChoiceModel (`model`). Behaves like the `model` if the `model` had the
- * `choices` as its alternatives.
- */
-data class EnumeratedDiscreteChoiceModel<A, C, P>(
-    val model: DiscreteChoiceModel<A, C, P>,
-    override val choices: Set<A>,
-) : UtilityBasedChoiceModel<A, C> by model, FixedChoiceModel<A, C> {
-    context(_: C, _: Random)
-    override fun select(choices: Set<A>): A = model.select(choices)
-
-    context(_: C)
-    fun probabilities() = probabilities(choices)
-
-    context(_: C)
-    fun utilities() = utilities(choices)
-
-    context(_: C, random: Random)
-    fun selectInjected(choices: Set<A>, injections: Map<A, (Double) -> Double>): A =
-        model.selectInjected(choices, injections)
-
-    context(_: C, random: Random)
-    fun selectInjected(injections: Map<A, (Double) -> Double>): A = selectInjected(choices, injections)
 }

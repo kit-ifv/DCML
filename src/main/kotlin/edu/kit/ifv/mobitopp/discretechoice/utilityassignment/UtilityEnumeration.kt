@@ -1,6 +1,6 @@
 package edu.kit.ifv.mobitopp.discretechoice.utilityassignment
 
-import edu.kit.ifv.mobitopp.discretechoice.models.UtilityAssignment
+import edu.kit.ifv.mobitopp.discretechoice.utilityassignment.UtilityAssignment
 import edu.kit.ifv.mobitopp.discretechoice.models.UtilityFunction
 
 
