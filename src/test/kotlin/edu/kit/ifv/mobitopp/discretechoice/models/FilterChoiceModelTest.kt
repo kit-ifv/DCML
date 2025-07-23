@@ -18,10 +18,10 @@ class FilterChoiceModelTest {
     val simpleChoiceModel = discreteStructure.multinomialLogit("Test model").build(Unit)
     val openChoiceModel = discreteStructure.openMultinomialLogit("Different model").build(Unit)
     val firstFilter = ChoiceFilter<Int, Unit> {
-        it - 1
+        it !=1
     }
     val secondFilter = ChoiceFilter<Int, Unit> {
-        it - 3
+        it != 3
     }
 
     @Test

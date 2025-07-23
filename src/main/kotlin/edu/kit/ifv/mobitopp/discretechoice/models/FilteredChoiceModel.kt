@@ -15,7 +15,8 @@ open class FilteredChoiceModel<A, C>(
 
     context(_: C, _: Random)
     override fun select(choices: Set<A>): A {
-        return original.select(filter.filter(choices))
+        val filteredChoices = choices.filter { filter.filter(it) }.toSet()
+        return original.select(filteredChoices)
     }
 
     context(_: C)
@@ -23,7 +24,7 @@ open class FilteredChoiceModel<A, C>(
         return original.utilities(alternatives)
     }
     override fun addFilter(filter: ChoiceFilter<A, C>): FilteredChoiceModel<A, C> {
-        return FilteredChoiceModel(original, this.filter.combine(filter))
+        return FilteredChoiceModel(original, this.filter + filter)
     }
 
 }

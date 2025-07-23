@@ -14,7 +14,7 @@ data class FixedOrderChoiceModel<A, C>(
      */
     context(_: C, _: Random)
     override fun select(choices: Set<A>): A {
-        val filtered = filter.filter(choices)
+        val filtered = choices.filter { filter.filter(it) }
         return this.choices.first { it in filtered }
     }
 

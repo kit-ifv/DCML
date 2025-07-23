@@ -14,10 +14,11 @@ open class BasicFilteredChoiceModel<A, C>(
 
     context(_: C, _: Random)
     override fun select(choices: Set<A>): A {
-        return original.select(filter.filter(choices))
+        val filteredChoices = choices.filter { filter.filter(it) }.toSet()
+        return original.select(filteredChoices)
     }
 
     override fun addFilter(filter: ChoiceFilter<A, C>): BasicFilteredChoiceModel<A, C> {
-        return BasicFilteredChoiceModel(original, this.filter.combine(filter), name)
+        return BasicFilteredChoiceModel(original, this.filter + filter, name)
     }
 }

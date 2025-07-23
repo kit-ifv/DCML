@@ -43,4 +43,3 @@ open class BenchmarkRun {
         blackhole.consume(selection)
     }
 }
-

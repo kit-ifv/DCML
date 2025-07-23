@@ -16,17 +16,19 @@ class FilteredFixedChoiceModel<A, C>(
     override val name: String = original.name
     context(_: C, random: Random)
     override fun select(): A {
-        return original.select(filter.filter(choices))
+        return original.select(filteredSet())
     }
-    context(_: C) override fun probabilities() = original.probabilities(filter.filter(choices))
-    context(_: C) override fun utilities() = original.utilities(filter.filter(choices))
+    context(_: C)
+    private fun filteredSet() = choices.filter { filter.filter(it) }.toSet()
+    context(_: C) override fun probabilities() = original.probabilities(filteredSet())
+    context(_: C) override fun utilities() = original.utilities(filteredSet())
 
 
     context(_: C) override fun utilities(vararg alternative: A): Map<A, Double> {
-        return original.utilities(filter.filter(alternative.toSet()))
+        return original.utilities(alternative.filter { filter.filter(it) }.toSet())
     }
     override fun addFilter(filter: ChoiceFilter<A, C>): FilteredFixedChoiceModel<A, C> {
-        return FilteredFixedChoiceModel(filter = this.filter.combine(filter), choices = choices, original = original)
+        return FilteredFixedChoiceModel(filter = this.filter + filter, choices = choices, original = original)
     }
 
 

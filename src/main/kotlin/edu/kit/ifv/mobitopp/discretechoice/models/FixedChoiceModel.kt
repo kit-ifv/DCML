@@ -7,7 +7,7 @@ interface FixedChoiceModel<A, C>: UtilityBasedChoiceModel<A, C> {
     val choices: Set<A>
     context(_: C, random: Random)
     fun select(): A
-    override fun addFilter(filter: ChoiceFilter<A, C>) = FilteredFixedChoiceModel(this, choices, filter)
+    override fun addFilter(filter: ChoiceFilter<A, in C>) = FilteredFixedChoiceModel(this, choices, filter)
     companion object {
         operator fun <A, C> invoke(     original: UtilityBasedChoiceModel<A, C>,
                        choices: Set<A>,): FixedChoiceModel<A, C> {

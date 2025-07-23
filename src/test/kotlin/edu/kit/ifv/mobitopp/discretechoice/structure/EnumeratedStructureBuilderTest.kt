@@ -32,6 +32,7 @@ class EnumeratedStructureBuilderTest {
 
         }
     }
+
     @Test
     fun bulkEditCalculatesCorrectUtility() {
         val p = Parameters()
