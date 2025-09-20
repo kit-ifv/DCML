@@ -9,7 +9,13 @@ import kotlin.random.Random
  * A SelectionFunction, which selects one of the options based on their assigned probability.
  */
 class RandomWeightedSelect<X> : SelectionFunction<X> {
-    override fun calculateSelection(options: Map<X, Double>, random: Random): X = options.select(random.nextDouble())
+    override fun calculateSelection(
+        options: List<X>,
+        probabilities: DoubleArray,
+        random: Random
+    ): X {
+        return options[probabilities.select(random.nextDouble())]
+    }
 }
 
 /**
@@ -17,8 +23,11 @@ class RandomWeightedSelect<X> : SelectionFunction<X> {
  * option has the same probability.
  */
 class UniformSelect<X> : SelectionFunction<X> {
-    override fun calculateSelection(options: Map<X, Double>, random: Random): X {
-        val index = random.nextInt(options.size)
-        return options.keys.toList()[index]
+    override fun calculateSelection(
+        options: List<X>,
+        probabilities: DoubleArray,
+        random: Random
+    ): X {
+        return options.random(random)
     }
 }

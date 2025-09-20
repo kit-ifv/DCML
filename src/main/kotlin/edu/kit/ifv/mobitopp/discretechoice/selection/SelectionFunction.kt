@@ -13,5 +13,5 @@ fun interface SelectionFunction<X> {
      * @param options a map, mapping each possible object to its probability. (All probabilities have to sum up to 1?)
      * @return one of the `X` objects present in `options`.
      */
-    fun calculateSelection(options: Map<X, Double>, random: Random): X
+    fun calculateSelection(options: List<X>, probabilities: DoubleArray, random: Random): X
 }

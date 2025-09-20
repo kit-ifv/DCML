@@ -21,7 +21,7 @@ fun <A, C, P> UtilityFunction<A, C, P>.openMultinomialLogit(name: String, select
         DiscreteChoiceModel(
             name = name,
             utilityAssignment = StaticUtilityAssignment(this),
-            distributionFunction = MultinomialLogit(),
+            distributionFunction = MultinomialLogit<A, P>(),
             selectionFunction = selectionFunction,
             parameters = parameters
         )

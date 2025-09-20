@@ -42,6 +42,21 @@ fun <K> Map<K, Double>.select(random: Double): K {
     return choice
 }
 
+/**
+ * Picks the key from the map which corresponds to the representative value of the random number.
+ */
+fun DoubleArray.select(random: Double): Int {
+    require(isNotEmpty()) {
+        "Cannot pick a value from an empty map"
+    }
+    require(random in 0.0..1.0) {
+        "Need a random value between 0 and 1"
+    }
+    val target = cumulativeSum().toList()
+    val ins = target.binarySearch { it.compareTo(random * target.last())  }
+    return ins.toIndex()
+}
+
 fun <K> Map<K, Double>.normalize(): Map<K, Double> {
     val sum = values.sum()
     val copy = this.toMutableMap()
@@ -67,6 +82,18 @@ fun Collection<Number>.cumulativeSum(): DoubleArray {
     }
 
     return result
+}
+
+fun DoubleArray.cumulativeSum(): DoubleArray {
+    var sum = 0.0
+    var counter = 0
+    for (number in this) {
+        sum += number.toDouble()
+        this[counter] = sum
+        counter++
+    }
+
+    return this
 }
 
 /**

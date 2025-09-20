@@ -26,16 +26,10 @@ data class RandomChoiceModel<A, C>(override val name: String, override val choic
         return -0.0
     }
 
-    override fun probabilities(utilities: Map<A, Double>): Map<A, Double> {
-        return choices.associateWith { 1.0 / choices.size }
+    override fun probabilities(utilities: DoubleArray): DoubleArray {
+        utilities.forEachIndexed { i, a ->
+            utilities[i] = 1.0 / choices.size
+        }
+        return utilities
     }
-
-    context(_: C, random: Random)
-    override fun selectInjected(
-        choices: Set<A>,
-        injections: Map<A, (Double) -> Double>,
-    ): A {
-        TODO("Not yet implemented")
-    }
-
 }

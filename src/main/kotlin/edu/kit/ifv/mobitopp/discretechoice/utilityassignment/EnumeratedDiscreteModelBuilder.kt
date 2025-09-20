@@ -2,6 +2,7 @@ package edu.kit.ifv.mobitopp.discretechoice.utilityassignment
 
 import edu.kit.ifv.mobitopp.discretechoice.distribution.CrossNestedLogit
 import edu.kit.ifv.mobitopp.discretechoice.distribution.CrossNestedStructureDataBuilder
+import edu.kit.ifv.mobitopp.discretechoice.distribution.DistributionFunction
 import edu.kit.ifv.mobitopp.discretechoice.distribution.MultinomialLogit
 import edu.kit.ifv.mobitopp.discretechoice.distribution.NestedLogit
 import edu.kit.ifv.mobitopp.discretechoice.distribution.NestedStructureDataBuilder
@@ -28,7 +29,7 @@ fun <A, C, P> UtilityAssignmentBuilder<A, C, P>.openMultinomialLogit(
         DiscreteChoiceModel(
             name = name,
             utilityAssignment = this.build(),
-            distributionFunction = MultinomialLogit(),
+            distributionFunction = MultinomialLogit<A, P>(),
             selectionFunction = RandomWeightedSelect(),
             parameters = parameters
         )
@@ -43,7 +44,7 @@ fun <A, C, P> UtilityAssignmentBuilder<A, C, P>.multinomialLogit(
         DiscreteChoiceModel(
             name = name,
             utilityAssignment = this.build(),
-            distributionFunction = MultinomialLogit(),
+            distributionFunction = MultinomialLogit<A, P>(),
             selectionFunction = RandomWeightedSelect(),
             parameters = parameters
         ).with(choices)
@@ -66,7 +67,7 @@ fun <A, C, P, B> B.nestedLogit(
         DiscreteChoiceModel<A, C, P>(
             name = name,
             utilityAssignment = utility,
-            distributionFunction = NestedLogit(structure),
+            distributionFunction = NestedLogit(structure) as DistributionFunction<P>,
             selectionFunction = RandomWeightedSelect(),
             parameters = parameters
         ).with(utility.options)
@@ -86,7 +87,7 @@ fun <A, C, P, B> B.crossNestedLogit(
         DiscreteChoiceModel(
             name = name,
             utilityAssignment = utility,
-            distributionFunction = CrossNestedLogit(structure),
+            distributionFunction = CrossNestedLogit(structure) as DistributionFunction<P>,
             selectionFunction = RandomWeightedSelect(),
             parameters = parameters
         ).with(utility.options)

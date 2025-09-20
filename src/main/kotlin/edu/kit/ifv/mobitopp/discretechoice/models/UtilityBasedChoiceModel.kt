@@ -9,8 +9,8 @@ import kotlin.random.Random
 interface UtilityBasedChoiceModel<A, C> : BasicChoiceModel<A, C> {
 
     context(_: C)
-    fun utilities(alternatives: Collection<A>): Map<A, Double> {
-        return alternatives.associateWith { utility(it) }
+    fun utilities(alternatives: Collection<A>): DoubleArray {
+        return alternatives.map { utility(it) }.toDoubleArray()
     }
 
     context(_: C)
@@ -19,12 +19,12 @@ interface UtilityBasedChoiceModel<A, C> : BasicChoiceModel<A, C> {
     fun utility(alternative: A): Double
 
     context(_: C)
-    fun probabilities(alternatives: Collection<A>): Map<A, Double> {
+    fun probabilities(alternatives: Collection<A>): DoubleArray {
         return probabilities(utilities(alternatives))
     }
     context(_: C)
-    fun probabilities(vararg alternatives: A): Map<A, Double> = probabilities(alternatives.toSet())
-    fun probabilities(utilities: Map<A, Double>): Map<A, Double>
+    fun probabilities(vararg alternatives: A): DoubleArray = probabilities(alternatives.toSet())
+    fun probabilities(utilities: DoubleArray): DoubleArray
 
 
     override fun addFilter(filter: ChoiceFilter<A, C>): FilteredChoiceModel<A, C> {
@@ -34,7 +34,4 @@ interface UtilityBasedChoiceModel<A, C> : BasicChoiceModel<A, C> {
     fun fixed(choices: Set<A>): FixedChoiceModel<A, C> {
         return FixedChoiceModel(this, choices)
     }
-
-    context(_: C, random: Random)
-    fun selectInjected(choices: Set<A>, injections: Map<A, (Double) -> Double>): A
 }

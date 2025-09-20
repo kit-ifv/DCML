@@ -20,11 +20,11 @@ class FilteredFixedChoiceModel<A, C>(
     }
     context(_: C)
     private fun filteredSet() = choices.filter { filter.filter(it) }.toSet()
-    context(_: C) override fun probabilities() = original.probabilities(filteredSet())
-    context(_: C) override fun utilities() = original.utilities(filteredSet())
+//    context(_: C) override fun probabilities() = original.probabilities(filteredSet())
+//    context(_: C) override fun utilities() = original.utilities(filteredSet())
 
 
-    context(_: C) override fun utilities(vararg alternative: A): Map<A, Double> {
+    context(_: C) override fun utilities(vararg alternative: A): DoubleArray {
         return original.utilities(alternative.filter { filter.filter(it) }.toSet())
     }
     override fun addFilter(filter: ChoiceFilter<A, C>): FilteredFixedChoiceModel<A, C> {

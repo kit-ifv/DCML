@@ -11,18 +11,18 @@ import kotlin.math.ln
  */
 class NestedLogit<A, C, P>(
     private val structure: NestStructureData<A, C, P>,
-) : DistributionFunction<A, P> {
+) : NestedDistributionFunction<A, P> {
 
     /**
      * @param utilities Should only map choices, which are present in the `structure` of this NestedLogit. Will fail
      * if other options are mapped. Only mapped options get included in the calculation of probabilities.
      */
-    override fun calculateProbabilities(utilities: Map<A, Double>, parameters: P): Map<A, Double> {
+    override fun calculateProbabilities(utilities: Map<A, Double>, parameters: P): DoubleArray {
         val (root, leafs) = structure
 
         return synchronized(root) {
             root.reset() // Reset the calculation tree to reset the relevantForCalculation flags.
-            val relevantLeafs = utilities.entries.map {
+            val relevantLeafs = utilities.map {
                 AssociatedSituation(
                     it.key,
                     leafs[it.key]!!,
@@ -31,9 +31,16 @@ class NestedLogit<A, C, P>(
             }
             runQueue(relevantLeafs, parameters) // calculate probabilities of entire graph
             // (only the relevant nodes included)
-            relevantLeafs.associate { it.sit to it.probability } // extract the probabilities of the options out of the
+            relevantLeafs.map { it.probability }.toDoubleArray()// extract the probabilities of the options out of the
             // leafs.
         }
+    }
+
+    override fun calculateProbabilities(
+        utilities: DoubleArray,
+        parameters: A
+    ): DoubleArray {
+        TODO("Not yet implemented")
     }
 }
 

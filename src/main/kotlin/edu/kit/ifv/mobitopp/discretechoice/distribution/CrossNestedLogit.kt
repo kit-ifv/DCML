@@ -5,9 +5,9 @@ import edu.kit.ifv.mobitopp.discretechoice.distribution.DistributionFunction
 
 class CrossNestedLogit<A, P>(
     private val structure: CrossNestStructureData<A, P>,
-) : DistributionFunction<A, P> {
+) : NestedDistributionFunction<A, P> {
 
-    override fun calculateProbabilities(utilities: Map<A, Double>, parameters: P): Map<A, Double> {
+    override fun calculateProbabilities(utilities: Map<A, Double>, parameters: P): DoubleArray {
         require(utilities.isNotEmpty()) {
             "Received empty utilityassignment map!"
         }
@@ -37,8 +37,12 @@ class CrossNestedLogit<A, P>(
             }
 
             runQueue(situations, parameters)
-            situations.groupBy { it.sit }.mapValues { it.value.sumOf { it.probability } }
+            situations.groupBy { it.sit }.map { it.value.sumOf { it.probability } }.toDoubleArray()
         }
+    }
+
+    override fun calculateProbabilities(utilities: DoubleArray, parameters: A): DoubleArray {
+        TODO("not yet implemented")
     }
 }
 

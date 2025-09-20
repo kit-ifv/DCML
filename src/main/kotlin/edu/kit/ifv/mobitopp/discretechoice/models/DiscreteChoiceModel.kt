@@ -17,7 +17,7 @@ import kotlin.random.Random
 data class DiscreteChoiceModel<A, C, P>(
     override val name: String,
     val utilityAssignment: UtilityAssignment<A, C, P>,
-    val distributionFunction: DistributionFunction<A, P>,
+    val distributionFunction: DistributionFunction<P>,
     val selectionFunction: SelectionFunction<A>,
     val parameters: P,
 ) : UtilityBasedChoiceModel<A, C> {
@@ -27,34 +27,14 @@ data class DiscreteChoiceModel<A, C, P>(
      * generator.
      */
     context(_: C, random: Random)
-    override fun select(choices: Set<A>): A =
-        selectionFunction.calculateSelection(probabilities(choices), random)
-
-    /**
-     * Selects an alternative by injecting custom modifications into the utilityassignment calculation
-     * for each choice prior to selection.
-     *
-     * This method allows external control over the utilityassignment values by providing a map of
-     * utilityassignment-modifying functions (i.e., injections) per choice. Each function transforms
-     * the original utilityassignment score calculated for its corresponding choice.
-     *
-     * @param choices A map from each available alternative to a function that modifies
-     * its original utilityassignment value. If a choice is not included in the map, the identity
-     * function is used by default (i.e., no modification).
-     * @param random The source of randomness used in the selection process.
-     * @return The selected alternative after applying the modified utilities.
-     */
-    context(_: C, random: Random)
-    override fun selectInjected(choices: Set<A>, injections: Map<A, (Double) -> Double>): A {
-        val modifiedUtilities = utilities(choices).mapValues { (alternative, utility) ->
-            val injection = injections[alternative] ?: { it }
-            injection(utility)
-        }
-        return selectionFunction.calculateSelection(probabilities(modifiedUtilities), random)
-
+    override fun select(choices: Set<A>): A {
+        val options = choices.toList()
+        return selectionFunction.calculateSelection(options, probabilities(utilities(options)), random)
     }
 
-    override fun probabilities(utilities: Map<A, Double>) =
+
+
+    override fun probabilities(utilities: DoubleArray) =
         distributionFunction.calculateProbabilities(utilities, parameters)
 
 

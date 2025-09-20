@@ -28,15 +28,7 @@ data class FixedOrderChoiceModel<A, C>(
         return 0.0
     }
 
-    override fun probabilities(utilities: Map<A, Double>): Map<A, Double> {
-        return emptyMap()
-    }
-
-    context(_: C, random: Random)
-    override fun selectInjected(
-        choices: Set<A>,
-        injections: Map<A, (Double) -> Double>,
-    ): A {
-        TODO("Not yet implemented")
+    override fun probabilities(utilities: DoubleArray): DoubleArray {
+        TODO("not yet implemented")
     }
 }

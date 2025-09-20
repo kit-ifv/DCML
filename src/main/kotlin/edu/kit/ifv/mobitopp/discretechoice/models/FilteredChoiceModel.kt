@@ -20,7 +20,7 @@ open class FilteredChoiceModel<A, C>(
     }
 
     context(_: C)
-    override fun utilities(alternatives: Collection<A>): Map<A, Double> {
+    override fun utilities(alternatives: Collection<A>): DoubleArray {
         return original.utilities(alternatives)
     }
     override fun addFilter(filter: ChoiceFilter<A, C>): FilteredChoiceModel<A, C> {

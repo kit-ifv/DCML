@@ -5,6 +5,10 @@ package edu.kit.ifv.mobitopp.discretechoice.distribution
  * utilityassignment functions already calculated. Also takes a parameter object and returns a map of calculated probabilities
  * from the given alternatives.
  */
-fun interface DistributionFunction<A, P> {
-    fun calculateProbabilities(utilities: Map<A, Double>, parameters: P): Map<A, Double>
+fun interface DistributionFunction<P> {
+    fun calculateProbabilities(utilities: DoubleArray, parameters: P): DoubleArray
+}
+
+interface NestedDistributionFunction<A, P>: DistributionFunction<A> {
+    fun calculateProbabilities(utilities: Map<A, Double>, parameters: P): DoubleArray
 }
