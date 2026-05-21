@@ -8,3 +8,4 @@ package edu.kit.ifv.mobitopp.discretechoice.distribution
 fun interface DistributionFunction<A, P> {
     fun calculateProbabilities(utilities: Map<A, Double>, parameters: P): Map<A, Double>
 }
+

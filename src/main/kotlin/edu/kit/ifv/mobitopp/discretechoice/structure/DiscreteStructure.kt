@@ -27,6 +27,10 @@ class DiscreteStructure<A, C, P>(
         }
         options[option] = utilityFunction
     }
+
+
+    fun remove(option: A) = options.remove(option)
+
 }
 
 class RuleBasedStructure<A, C, P>(

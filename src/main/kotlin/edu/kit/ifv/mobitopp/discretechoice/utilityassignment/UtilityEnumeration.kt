@@ -1,10 +1,9 @@
 package edu.kit.ifv.mobitopp.discretechoice.utilityassignment
 
-import edu.kit.ifv.mobitopp.discretechoice.utilityassignment.UtilityAssignment
 import edu.kit.ifv.mobitopp.discretechoice.models.UtilityFunction
 
 
-interface UtilityEnumeration<A, C, P> : UtilityAssignment<A, C, P> {
+interface UtilityEnumeration<A, in C, in P> : UtilityAssignment<A, C, P> {
     val options: Set<A>
 }
 

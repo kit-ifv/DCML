@@ -5,6 +5,7 @@ import edu.kit.ifv.mobitopp.discretechoice.distribution.CrossNestedStructureData
 import edu.kit.ifv.mobitopp.discretechoice.distribution.MultinomialLogit
 import edu.kit.ifv.mobitopp.discretechoice.distribution.NestedLogit
 import edu.kit.ifv.mobitopp.discretechoice.distribution.NestedStructureDataBuilder
+import edu.kit.ifv.mobitopp.discretechoice.models.ArrayBackedFixedChoiceModel
 import edu.kit.ifv.mobitopp.discretechoice.models.DiscreteChoiceModel
 import edu.kit.ifv.mobitopp.discretechoice.models.FixedChoiceModel
 import edu.kit.ifv.mobitopp.discretechoice.selection.RandomWeightedSelect
@@ -49,10 +50,30 @@ fun <A, C, P> UtilityAssignmentBuilder<A, C, P>.multinomialLogit(
         ).with(choices)
     }
 
+//fun <A, C, P> UtilityEnumerationBuilder<A, C, P>.multinomialLogit(
+//    name: String,
+//): EnumeratedDiscreteModelBuilder<A, C, P> =
+//    this.multinomialLogit(name, this.build().options)
 fun <A, C, P> UtilityEnumerationBuilder<A, C, P>.multinomialLogit(
     name: String,
-): EnumeratedDiscreteModelBuilder<A, C, P> =
-    this.multinomialLogit(name, this.build().options)
+): EnumeratedDiscreteModelBuilder<A, C, P> = Cheater(this, name)
+
+class Cheater<A, C, P>(
+    private val utilityBuilder: UtilityEnumerationBuilder<A, C, P>,
+    private val name: String
+): EnumeratedDiscreteModelBuilder<A, C, P> {
+    override fun build(parameters: P): FixedChoiceModel<A, C> {
+        return utilityBuilder.optimizedMultinomialLogit(name, parameters)
+    }
+}
+
+fun <A, C, P> UtilityEnumerationBuilder<A, C, P>.optimizedMultinomialLogit(
+    name: String,
+    parameters: P,
+): ArrayBackedFixedChoiceModel<A, C, P> {
+    val utilityEnumeration = this.build()
+    return ArrayBackedFixedChoiceModel(utilityEnumeration, name = name, parameters = parameters)
+}
 
 fun <A, C, P, B> B.nestedLogit(
     name: String,

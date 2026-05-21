@@ -2,18 +2,18 @@ package edu.kit.ifv.mobitopp.discretechoice.structure
 
 
 import edu.kit.ifv.mobitopp.discretechoice.distribution.NestStructure
-import edu.kit.ifv.mobitopp.discretechoice.utilityassignment.UtilityAssignment
 import edu.kit.ifv.mobitopp.discretechoice.models.UtilityFunction
+import edu.kit.ifv.mobitopp.discretechoice.utilityassignment.UtilityAssignment
 import edu.kit.ifv.mobitopp.discretechoice.utilityassignment.UtilityEnumeration
 
-fun interface UtilityAssignmentBuilder<A, C, P> {
+fun interface UtilityAssignmentBuilder<in A, in C, in P> {
 
     // TODO add name here?
 
     fun build(): UtilityAssignment<A, C, P>
 }
 
-fun interface UtilityEnumerationBuilder<A, C, P> : UtilityAssignmentBuilder<A, C, P> {
+fun interface UtilityEnumerationBuilder<A, in C, in P> : UtilityAssignmentBuilder<A, C, P> {
 
     override fun build(): UtilityEnumeration<A, C, P>
 }
@@ -80,11 +80,15 @@ interface EnumeratedStructureBuilder<A, C, P> {
  * Even if there is no recognizable structure like a list or map in [P] we can still load multiple options, but they
  * are using the global parameter object in that case.
  */
-fun <A, C, P> EnumeratedStructureBuilder<A, C, P>.forOptions(elements: Iterable<A>, utilityFunction: P.(A, C) -> Double) {
+fun <A, C, P> EnumeratedStructureBuilder<A, C, P>.forOptions(
+    elements: Iterable<A>,
+    utilityFunction: P.(A, C) -> Double,
+) {
     elements.forEach {
         option(it, utilityFunction)
     }
 }
+
 /**
  * Convenience function to load a bulk of options with the same utilityassignment function, if the parameter object implements index
  * based lookup of the concrete parameter instantiation that should be used. The options are zipped by appearance (read index)
@@ -109,7 +113,8 @@ fun <T, A, C, P : Map<A, T>> EnumeratedStructureBuilder<A, C, P>.loadFromMap(
     utilityFunction: T.(A, C) -> Double,
 ) {
     options.forEach { currentOption ->
-        option(currentOption,
+        option(
+            currentOption,
             parameters = {
                 this[currentOption]
                     ?: throw NoSuchElementException("The parameter object $this has no parameter set present for $currentOption, which was requested for utilityassignment calculation. Registered options are ${this.keys}")
