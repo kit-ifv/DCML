@@ -16,6 +16,15 @@ interface FixedChoiceModel<A, C>: UtilityBasedChoiceModel<A, C> {
     }
     context(_: C) fun probabilities() = this.probabilities(choices)
     context(_: C) fun utilities() = this.utilities(choices)
+
+    /**
+     * Do not use this method on FixedChoiceModel, use Array backed choice model, because that will pipe in the filter
+     * and avoid object creation.
+     */
+    context(_: C, random: Random)
+    fun selectFiltered(filter: (A) -> Boolean): A {
+        return select(choices.filter(filter).toSet())
+    }
 }
 
 data class FixedChoiceModelImpl<A, C>(

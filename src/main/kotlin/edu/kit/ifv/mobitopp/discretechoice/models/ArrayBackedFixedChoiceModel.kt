@@ -8,12 +8,19 @@ import edu.kit.ifv.mobitopp.discretechoice.selection.WeightedSelection
 import edu.kit.ifv.mobitopp.discretechoice.utilityassignment.UtilityEnumeration
 import kotlin.random.Random
 
+/**
+ * This class uses, and in particular reuses a double array for both the utilities and the probabilities.
+ * The array is modified inplace, using the corresponding CumulateDistribution Array and SelectionFunctionArray.
+ *
+ *
+ */
+
 class ArrayBackedFixedChoiceModel<A, C, P>(
     val utilityAssignment: UtilityEnumeration<A, C, P>,
     val distributionFunction: CumulateDistributionArray<P> = MultinomialLogitArray(),
     val selectionFunction: SelectionFunctionArray = WeightedSelection(),
     val parameters: P,
-    override val name: String
+    override val name: String,
 ) : FixedChoiceModel<A, C> {
     override val choices: Set<A> = utilityAssignment.options
 
@@ -38,6 +45,24 @@ class ArrayBackedFixedChoiceModel<A, C, P>(
         return selectInternal(calculationArray)
 
     }
+
+    context(c: C, random: Random)
+    override  fun selectFiltered(filter: (A) -> Boolean): A {
+
+        val calculationArray = DoubleArray(choices.size) {
+            if (filter(alternatives[it])) {
+                utilityFunctions[it].calculateUtility(
+                    alternatives[it], c,
+                    parameters
+                )
+            } else {
+                Double.NEGATIVE_INFINITY
+            }
+
+        }
+        return selectInternal(calculationArray)
+    }
+
     context(random: Random)
     private fun selectInternal(array: DoubleArray): A {
         distributionFunction.cumulateProbabilities(array, parameters)
@@ -56,12 +81,11 @@ class ArrayBackedFixedChoiceModel<A, C, P>(
     override fun select(choices: Set<A>): A {
 
         val calculationArray = DoubleArray(alternatives.size) {
-
             Double.NEGATIVE_INFINITY
         }
         choices.forEach {
             val idx = getIndex(it)
-            calculationArray[idx]= utilityFunctions[idx].calculateUtility(it, c, parameters)
+            calculationArray[idx] = utilityFunctions[idx].calculateUtility(it, c, parameters)
         }
         return selectInternal(calculationArray)
     }
@@ -70,7 +94,7 @@ class ArrayBackedFixedChoiceModel<A, C, P>(
         val keyMap = utilities.mapKeys { getIndex(it.key) }
         val calculationArray = DoubleArray(alternatives.size) {
 
-            keyMap[it] ?:Double.NEGATIVE_INFINITY
+            keyMap[it] ?: Double.NEGATIVE_INFINITY
         }
         distributionFunction.probabilities(calculationArray, parameters)
         return utilities.keys.associateWith {
@@ -98,7 +122,7 @@ class ArrayBackedFixedChoiceModel<A, C, P>(
         }
         injections.forEach { (key, operation) ->
             val idx = getIndex(key)
-            calculationArray[idx]= operation(calculationArray[idx])
+            calculationArray[idx] = operation(calculationArray[idx])
 
         }
         return selectInternal(calculationArray)
