@@ -49,23 +49,16 @@ fun <A, C, P> UtilityAssignmentBuilder<A, C, P>.multinomialLogit(
             parameters = parameters
         ).with(choices)
     }
+@Deprecated("Use multinomialLogic instead")
+fun <A, C, P> UtilityEnumerationBuilder<A, C, P>.multinomialLogitLegacy(
+    name: String,
+): EnumeratedDiscreteModelBuilder<A, C, P> =
+    this.multinomialLogit(name, this.build().options)
 
-//fun <A, C, P> UtilityEnumerationBuilder<A, C, P>.multinomialLogit(
-//    name: String,
-//): EnumeratedDiscreteModelBuilder<A, C, P> =
-//    this.multinomialLogit(name, this.build().options)
+// Redirected multinomial logit to point to the ArrayBuilder instead.
 fun <A, C, P> UtilityEnumerationBuilder<A, C, P>.multinomialLogit(
     name: String,
-): EnumeratedDiscreteModelBuilder<A, C, P> = Cheater(this, name)
-
-class Cheater<A, C, P>(
-    private val utilityBuilder: UtilityEnumerationBuilder<A, C, P>,
-    private val name: String
-): EnumeratedDiscreteModelBuilder<A, C, P> {
-    override fun build(parameters: P): FixedChoiceModel<A, C> {
-        return utilityBuilder.optimizedMultinomialLogit(name, parameters)
-    }
-}
+): EnumeratedDiscreteModelBuilder<A, C, P> = OptimizedArrayBuilder(this, name)
 
 fun <A, C, P> UtilityEnumerationBuilder<A, C, P>.optimizedMultinomialLogit(
     name: String,
