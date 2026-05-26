@@ -7,7 +7,7 @@ interface FixedChoiceModel<A, C>: UtilityBasedChoiceModel<A, C> {
     val choices: Set<A>
     context(_: C, random: Random)
     fun select(): A
-    override fun addFilter(filter: ChoiceFilter<A, in C>) = FilteredFixedChoiceModel(this, choices, filter)
+    override fun addFilter(filter: ChoiceFilter<A, C>) = FilteredFixedChoiceModel(this, choices, filter)
     companion object {
         operator fun <A, C> invoke(     original: UtilityBasedChoiceModel<A, C>,
                        choices: Set<A>,): FixedChoiceModel<A, C> {
@@ -16,6 +16,15 @@ interface FixedChoiceModel<A, C>: UtilityBasedChoiceModel<A, C> {
     }
     context(_: C) fun probabilities() = this.probabilities(choices)
     context(_: C) fun utilities() = this.utilities(choices)
+
+    /**
+     * Do not use this method on FixedChoiceModel, use Array backed choice model, because that will pipe in the filter
+     * and avoid object creation.
+     */
+    context(_: C, random: Random)
+    fun selectFiltered(filter: (A) -> Boolean): A {
+        return select(choices.filter(filter).toSet())
+    }
 }
 
 data class FixedChoiceModelImpl<A, C>(
@@ -39,3 +48,4 @@ data class FixedChoiceModelImpl<A, C>(
 
     override fun addFilter(filter: ChoiceFilter<A, C>) = FilteredFixedChoiceModel<A, C>(original, choices, filter)
 }
+

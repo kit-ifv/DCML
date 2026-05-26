@@ -10,7 +10,7 @@ import edu.kit.ifv.mobitopp.discretechoice.models.UtilityFunction
  * position=Karlsruhe... whatever). `P` is the type which contains these concrete values. It's the type the returned
  * Utility function expects.
  */
-fun interface UtilityAssignment<A, C, P> {
+fun interface UtilityAssignment<in A, in C, in P> {
     fun getUtilityFunctionFor(alternative: A): UtilityFunction<A, C, P>?
     operator fun get(alternative: A) = getUtilityFunctionFor(alternative)
 }

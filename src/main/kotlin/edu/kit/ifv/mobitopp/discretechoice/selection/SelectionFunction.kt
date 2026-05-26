@@ -15,3 +15,4 @@ fun interface SelectionFunction<X> {
      */
     fun calculateSelection(options: Map<X, Double>, random: Random): X
 }
+

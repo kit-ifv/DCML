@@ -5,6 +5,7 @@ import edu.kit.ifv.mobitopp.discretechoice.distribution.CrossNestedStructureData
 import edu.kit.ifv.mobitopp.discretechoice.distribution.MultinomialLogit
 import edu.kit.ifv.mobitopp.discretechoice.distribution.NestedLogit
 import edu.kit.ifv.mobitopp.discretechoice.distribution.NestedStructureDataBuilder
+import edu.kit.ifv.mobitopp.discretechoice.models.ArrayBackedFixedChoiceModel
 import edu.kit.ifv.mobitopp.discretechoice.models.DiscreteChoiceModel
 import edu.kit.ifv.mobitopp.discretechoice.models.FixedChoiceModel
 import edu.kit.ifv.mobitopp.discretechoice.selection.RandomWeightedSelect
@@ -48,11 +49,24 @@ fun <A, C, P> UtilityAssignmentBuilder<A, C, P>.multinomialLogit(
             parameters = parameters
         ).with(choices)
     }
-
-fun <A, C, P> UtilityEnumerationBuilder<A, C, P>.multinomialLogit(
+@Deprecated("Use multinomialLogic instead")
+fun <A, C, P> UtilityEnumerationBuilder<A, C, P>.multinomialLogitLegacy(
     name: String,
 ): EnumeratedDiscreteModelBuilder<A, C, P> =
     this.multinomialLogit(name, this.build().options)
+
+// Redirected multinomial logit to point to the ArrayBuilder instead.
+fun <A, C, P> UtilityEnumerationBuilder<A, C, P>.multinomialLogit(
+    name: String,
+): EnumeratedDiscreteModelBuilder<A, C, P> = OptimizedArrayBuilder(this, name)
+
+fun <A, C, P> UtilityEnumerationBuilder<A, C, P>.optimizedMultinomialLogit(
+    name: String,
+    parameters: P,
+): ArrayBackedFixedChoiceModel<A, C, P> {
+    val utilityEnumeration = this.build()
+    return ArrayBackedFixedChoiceModel(utilityEnumeration, name = name, parameters = parameters)
+}
 
 fun <A, C, P, B> B.nestedLogit(
     name: String,
