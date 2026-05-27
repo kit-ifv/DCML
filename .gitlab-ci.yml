@@ -1,4 +1,5 @@
-image: amazoncorretto:21
+default:
+  image: amazoncorretto:25
 
 stages:
   - build
@@ -24,7 +25,6 @@ deploy-job:
     - main
     - master
   needs: [ "test-job" ]
-  image: amazoncorretto:21
   resource_group: production #only one deploy job at a time
   script:
     - echo "Publish local release $BUILD_VERSION"
