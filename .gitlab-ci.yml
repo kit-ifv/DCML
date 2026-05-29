@@ -54,6 +54,11 @@ publish-job:
     - export NEW_BUILD_VERSION=$MAJOR.$NEW_MINOR.0
     - mkdir -p "$CI_PROJECT_DIR/.ci-secrets"
     - printf '%s' "$GPG_SECRING" | base64 -d > "$CI_PROJECT_DIR/.ci-secrets/secring.gpg"
+    - echo "New Build Version $NEW_BUILD_VERSION"
+    - echo "PUBLIC_REPO_USERNAME ${#PUBLIC_REPO_USERNAME}"
+    - echo "PUBLIC_REPO_PW ${#PUBLIC_REPO_PASSWORD}"
+    - echo "GPG ${#GPG_ID}"
+    - echo "GPGPW ${#GPG_PASSWORD}"
     - chmod 600 "$CI_PROJECT_DIR/.ci-secrets/secring.gpg"
     - |
       ./gradlew publishToSonatype closeSonatypeStagingRepository -PbuildVersion=$NEW_BUILD_VERSION \
