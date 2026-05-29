@@ -60,6 +60,8 @@ if (checkProperty("doPublish")) {
 
     publishing {
 
+        val githubURL: String = "github.com/kit-ifv/DCML"
+        val projectDescription: String = "A kotlin DSL syntax to define discrete choice models."
         publications {
 
             create<MavenPublication>("mavenData") {
@@ -70,8 +72,8 @@ if (checkProperty("doPublish")) {
 
                 pom {
                     name.set(project.name)
-                    description.set("A kotlin DSL syntax to define discrete choice models.")
-                    url.set("https://github.com/kit-ifv/DCML")
+                    description.set(projectDescription)
+                    url.set("https://$githubURL")
 
                     licenses {
                         license {
@@ -94,9 +96,9 @@ if (checkProperty("doPublish")) {
                     }
 
                     scm {
-                        connection.set("scm:git:git:https://github.com/kit-ifv/DCML.git")
-                        developerConnection.set("scm:git:ssh://git@github.com/kit-ifv/DCML.git")
-                        url.set("https://github.com/kit-ifv/DCML")
+                        connection.set("scm:git:git:https://$githubURL.git")
+                        developerConnection.set("scm:git:ssh://git@$githubURL.git")
+                        url.set("https://$githubURL")
                     }
                 }
             }
