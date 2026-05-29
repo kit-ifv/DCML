@@ -117,8 +117,6 @@ if (checkProperty("doPublish")) {
                         sonatype {
                             nexusUrl.set(uri("https://ossrh-staging-api.central.sonatype.com/service/local/"))
                             snapshotRepositoryUrl.set(uri("https://central.sonatype.com/repository/maven-snapshots/"))
-                            username = requireProperty("publicRepoUser")
-                            password = requireProperty("publicRepoPassword")
                         }
                     }
                 }
