@@ -1,11 +1,12 @@
 plugins {
     kotlin("jvm") version  "2.3.0"
     id("maven-publish")
-    id("org.jetbrains.dokka") version "2.2.0"
+    id("signing")
     id("me.champeau.jmh") version "0.7.3"
 }
 
 group = "edu.kit.ifv.mobitopp"
+project.group = "edu.kit.ifv.mobitopp"
 
 repositories {
     mavenCentral()
@@ -20,87 +21,121 @@ dependencies {
 tasks.test {
     useJUnitPlatform()
 }
+
 kotlin {
     jvmToolchain(25)
     compilerOptions {
         freeCompilerArgs.add("-Xcontext-parameters")
     }
 }
-allprojects {
-    apply(plugin = "maven-publish")
 
-    project.group = "edu.kit.ifv.mobitopp"
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
 
-    afterEvaluate {
 
-        if (checkProperty("doPublish")) {
-            /* mobiTopp publishing process (see .gitlab-ci.yml)
-             * Parameters such as "doPublish" must be passed in gradle command:
-             *  - ./gradlew <TASKS> publish -PdoPublish=true -Pparam=value...
-             * Lookup of parameters doPublish and isRelease returns true if they are specified and their value reads "true".
-             * Other required parameters must be specified, otherwise an error is thrown.
-             *
-             * The pipeline build version is used as the published artifacts version string.
-             *  - uses parameter: "buildVersion"
-             *
-             * Every merge on main is published to local repo: see deploy-job
-             *  - checks: doPublish=true, isRelease=false
-             *  - requires parameters: "localUrl", "localRepoUser" and "localRepoPassword"
-             *
-             * Public releases must be published manually:
-             *  - checks: doPublish=true, isRelease=true
-             *  - requires parameters: "publicUrl", "publicRepoUser" and "publicRepoPassword"
-             */
+if (checkProperty("doPublish")) {
+    /* mobiTopp publishing process (see .gitlab-ci.yml)
+        * Parameters such as "doPublish" must be passed in gradle command:
+        *  - ./gradlew <TASKS> publish -PdoPublish=true -Pparam=value...
+        * Lookup of parameters doPublish and isRelease returns true if they are specified and their value reads "true".
+        * Other required parameters must be specified, otherwise an error is thrown.
+        *
+        * The pipeline build version is used as the published artifacts version string.
+        *  - uses parameter: "buildVersion"
+        *
+        * Every merge on main is published to local repo: see deploy-job
+        *  - checks: doPublish=true, isRelease=false
+        *  - requires parameters: "localUrl", "localRepoUser" and "localRepoPassword"
+        *
+        * Public releases must be published manually:
+        *  - checks: doPublish=true, isRelease=true
+        *  - requires parameters: "publicUrl", "publicRepoUser" and "publicRepoPassword"
+        */
 
-            project.version = requireProperty("buildVersion")
-            println("Setup publishing configuration for ${group}:${project.name}:${version}.")
+    project.version = requireProperty("buildVersion")
+    println("Setup publishing configuration for ${group}:${project.name}:${version}.")
 
-            publishing {
+    publishing {
 
-                publications {
-                    register("mavenData", MavenPublication::class) {
-                        from(components["kotlin"]) // For Kotlin projects
-                        groupId = group.toString()
-                        artifactId = project.name
-                        version = project.version.toString()
-                    }
-                }
+        publications {
 
-                repositories {
-                    if (checkProperty("isRelease")) {
-                        println("Activate: publish public release!")
-                        println("WARNING: Public release still deactivated!")
+            create<MavenPublication>("mavenData") {
+                from(components["java"])
+                groupId = group.toString()
+                artifactId = project.name
+                version = project.version.toString()
 
-                        //  Keep for first public release of reengineered mobitopp
-                        //maven {
-                        //    name = "PublicRepo"
-                        //    url = uri(requireProperty("publicUrl"))
-                        //    credentials {
-                        //        username = requireProperty("publicRepoUser")
-                        //        password = requireProperty("publicRepoPassword")
-                        //    }
-                        //}
+                pom {
+                    name.set(project.name)
+                    description.set("A kotlin DSL syntax to define discrete choice models.")
+                    url.set("https://github.com/kit-ifv/DCML")
 
-                    } else {
-                        println("Activate: publish local build!")
-                        maven {
-                            name = "LocalRepo"
-                            url = uri(requireProperty("localUrl"))
-                            credentials {
-                                username = requireProperty("localRepoUser")
-                                password = requireProperty("localRepoPassword")
-                            }
+                    licenses {
+                        license {
+                            name.set("MIT License")
+                            url.set("https://mit-license.org")
                         }
                     }
-                }
 
+                    developers {
+                        developer {
+                            id.set("Robin Andre")
+                            name.set("Robin Andre")
+                            email.set("robin.andre@kit.edu")
+                        }
+                        developer {
+                            id.set("Jelle Kübler")
+                            name.set("Jelle Kübler")
+                            email.set("jelle.kuebler@kit.edu")
+                        }
+                    }
+
+                    scm {
+                        connection.set("scm:git:git:https://github.com/kit-ifv/DCML.git")
+                        developerConnection.set("scm:git:ssh://git@github.com/kit-ifv/DCML.git")
+                        url.set("https://github.com/kit-ifv/DCML")
+                    }
+                }
             }
 
+        }
+
+        repositories {
+            if (checkProperty("isRelease")) {
+                println("Activate: publish public release!")
+
+                signing {
+                    sign(publishing.publications)
+                }
+
+                maven {
+                    name = "PublicRepo"
+                    url = uri(requireProperty("publicUrl"))
+                    credentials {
+                        username = requireProperty("publicRepoUser")
+                        password = requireProperty("publicRepoPassword")
+                    }
+                }
+
+            } else {
+                println("Activate: publish local build!")
+                maven {
+                    name = "LocalRepo"
+                    url = uri(requireProperty("localUrl"))
+                    credentials {
+                        username = requireProperty("localRepoUser")
+                        password = requireProperty("localRepoPassword")
+                    }
+                }
+            }
         }
 
     }
 
 }
+
 
 fun requireProperty(property: String, orElse: String? = null): String =
     requireNotNull(project.findProperty(property) as? String ?: orElse) {

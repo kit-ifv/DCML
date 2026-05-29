@@ -38,3 +38,33 @@ deploy-job:
     - export NEW_BUILD_NUMBER=$((BUILD_NUMBER + 1))
     - echo "Update BUILD_NUMBER to $NEW_BUILD_NUMBER"
     - curl --request PUT --header "PRIVATE-TOKEN:$API_TOKEN" --form "value=$NEW_BUILD_NUMBER" "$GITLAB_API_URL/BUILD_NUMBER"
+
+publish-job:
+  allow_failure: false
+  when: manual
+  stage: publish
+  only:
+    - main
+    - master
+  needs: [ "test-job" ]
+  resource_group: production #only one deploy job at a time
+  script:
+    - echo "Publish local and public release $BUILD_VERSION"^
+    - export NEW_MINOR=$((MINOR + 1))
+    - export NEW_BUILD_VERSION=$MAJOR.$NEW_MINOR.0
+    - mkdir -p "$CI_PROJECT_DIR/.ci-secrets"
+    - printf '%s' "$GPG_SECRING" | base64 -d > "$CI_PROJECT_DIR/.ci-secrets/secring.gpg"
+    - chmod 600 "$CI_PROJECT_DIR/.ci-secrets/secring.gpg"
+    - |
+      ./gradlew publish -PbuildVersion=$BUILD_VERSION \
+      -PdoPublish=true \
+      -PisRelease=true \
+      -PpublicUrl=$PUBLIC_REPO_URL \
+      -PpublicRepoUser=$PUBLIC_REPO_USERNAME \
+      -PpublicRepoPassword=$PUBLIC_REPO_PASSWORD \
+      -Psigning.keyId=$GPG_ID \
+      -Psigning.password=$GPG_PASSWORD \
+      -Psigning.secretKeyRingFile="$CI_PROJECT_DIR/.ci-secrets/secring.gpg"
+    - echo "Update MINOR to $NEW_MINOR, set BUILD_NUMBER to 0"
+    - curl --request PUT --header "PRIVATE-TOKEN:$API_TOKEN" "$GITLAB_API_URL/MINOR" --form "value=$NEW_MINOR"
+    - curl --request PUT --header "PRIVATE-TOKEN:$API_TOKEN" "$GITLAB_API_URL/BUILD_NUMBER" --form "value=0"
