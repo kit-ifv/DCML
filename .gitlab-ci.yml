@@ -56,7 +56,7 @@ publish-job:
     - printf '%s' "$GPG_SECRING" | base64 -d > "$CI_PROJECT_DIR/.ci-secrets/secring.gpg"
     - chmod 600 "$CI_PROJECT_DIR/.ci-secrets/secring.gpg"
     - |
-      ./gradlew publish -PbuildVersion=$NEW_BUILD_VERSION \
+      ./gradlew publishToSonatype closeSonatypeStagingRepository -PbuildVersion=$NEW_BUILD_VERSION \
       -PdoPublish=true \
       -PisRelease=true \
       -PpublicUrl=$PUBLIC_REPO_URL \

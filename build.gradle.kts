@@ -1,6 +1,7 @@
 plugins {
     kotlin("jvm") version  "2.3.0"
     id("maven-publish")
+    id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
     id("signing")
     id("me.champeau.jmh") version "0.7.3"
 }
@@ -110,12 +111,15 @@ if (checkProperty("doPublish")) {
                     sign(publishing.publications)
                 }
 
-                maven {
-                    name = "PublicRepo"
-                    url = uri(requireProperty("publicUrl"))
-                    credentials {
-                        username = requireProperty("publicRepoUser")
-                        password = requireProperty("publicRepoPassword")
+                nexusPublishing {
+                    repositories {
+                        // see https://central.sonatype.org/publish/publish-portal-ossrh-staging-api/#configuration
+                        sonatype {
+                            nexusUrl.set(uri("https://ossrh-staging-api.central.sonatype.com/service/local/"))
+                            snapshotRepositoryUrl.set(uri("https://central.sonatype.com/repository/maven-snapshots/"))
+                            username = requireProperty("publicRepoUser")
+                            password = requireProperty("publicRepoPassword")
+                        }
                     }
                 }
 
