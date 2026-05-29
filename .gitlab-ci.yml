@@ -59,9 +59,8 @@ publish-job:
       ./gradlew publishToSonatype closeSonatypeStagingRepository -PbuildVersion=$NEW_BUILD_VERSION \
       -PdoPublish=true \
       -PisRelease=true \
-      -PpublicUrl=$PUBLIC_REPO_URL \
-      -PpublicRepoUser=$PUBLIC_REPO_USERNAME \
-      -PpublicRepoPassword=$PUBLIC_REPO_PASSWORD \
+      -PsonatypeUsername=$PUBLIC_REPO_USERNAME \
+      -PsonatypePassword=$PUBLIC_REPO_PASSWORD \
       -Psigning.keyId=$GPG_ID \
       -Psigning.password=$GPG_PASSWORD \
       -Psigning.secretKeyRingFile="$CI_PROJECT_DIR/.ci-secrets/secring.gpg"
