@@ -1,7 +1,5 @@
 package edu.kit.ifv.mobitopp.discretechoice.selection
 
-import edu.kit.ifv.mobitopp.discretechoice.utils.cumulativeSum
-import edu.kit.ifv.mobitopp.discretechoice.utils.toIndex
 import kotlin.random.Random
 
 /**
@@ -25,4 +23,3 @@ class WeightedSelection: SelectionFunctionArray {
         return probabilities.size
     }
 }
-

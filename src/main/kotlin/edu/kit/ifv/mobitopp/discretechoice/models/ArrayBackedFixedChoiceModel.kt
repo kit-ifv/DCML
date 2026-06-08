@@ -42,30 +42,33 @@ class ArrayBackedFixedChoiceModel<A, C, P>(
         val calculationArray = DoubleArray(choices.size) {
             utilityFunctions[it].calculateUtility(alternatives[it], c, parameters)
         }
-        return selectInternal(calculationArray)
+        return selectInternal(calculationArray) { choices }
 
     }
 
     context(c: C, random: Random)
-    override  fun selectFiltered(filter: (A) -> Boolean): A {
-
+    override fun selectFiltered(filter: (A) -> Boolean): A {
         val calculationArray = DoubleArray(choices.size) {
             if (filter(alternatives[it])) {
                 utilityFunctions[it].calculateUtility(
                     alternatives[it], c,
                     parameters
                 )
+
             } else {
                 Double.NEGATIVE_INFINITY
             }
 
         }
-        return selectInternal(calculationArray)
+        return selectInternal(calculationArray) { choices.filter(filter) }
     }
 
     context(random: Random)
-    private fun selectInternal(array: DoubleArray): A {
-        distributionFunction.cumulateProbabilities(array, parameters)
+    private inline fun selectInternal(array: DoubleArray, fallbackOptions: () -> Collection<A>): A {
+        val success = distributionFunction.tryCumulateProbabilities(array, parameters)
+        if (!success) {
+            return fallbackOptions().random(random)
+        }
         val outputIdx = selectionFunction.calculateSelection(
             array, random
         )
@@ -79,15 +82,11 @@ class ArrayBackedFixedChoiceModel<A, C, P>(
      */
     context(c: C, random: Random)
     override fun select(choices: Set<A>): A {
-
-        val calculationArray = DoubleArray(alternatives.size) {
-            Double.NEGATIVE_INFINITY
+        if (choices.size == 1) return choices.iterator().next()
+        val calculationArray = spawnUtilityArray(choices, c)
+        return selectInternal(calculationArray) {
+            choices
         }
-        choices.forEach {
-            val idx = getIndex(it)
-            calculationArray[idx] = utilityFunctions[idx].calculateUtility(it, c, parameters)
-        }
-        return selectInternal(calculationArray)
     }
 
     override fun probabilities(utilities: Map<A, Double>): Map<A, Double> {
@@ -112,6 +111,18 @@ class ArrayBackedFixedChoiceModel<A, C, P>(
         choices: Set<A>,
         injections: Map<A, (Double) -> Double>,
     ): A {
+
+        if (choices.size == 1) return choices.iterator().next()
+        val calculationArray = spawnUtilityArray(choices, c)
+        injections.forEach { (key, operation) ->
+            val idx = getIndex(key)
+            calculationArray[idx] = operation(calculationArray[idx])
+
+        }
+        return selectInternal(calculationArray) { choices }
+    }
+
+    private fun spawnUtilityArray(choices: Set<A>, c: C): DoubleArray {
         val calculationArray = DoubleArray(alternatives.size) {
 
             Double.NEGATIVE_INFINITY
@@ -120,12 +131,7 @@ class ArrayBackedFixedChoiceModel<A, C, P>(
             val idx = getIndex(it)
             calculationArray[idx] = utilityFunctions[idx].calculateUtility(it, c, parameters)
         }
-        injections.forEach { (key, operation) ->
-            val idx = getIndex(key)
-            calculationArray[idx] = operation(calculationArray[idx])
-
-        }
-        return selectInternal(calculationArray)
+        return calculationArray
     }
 
 
