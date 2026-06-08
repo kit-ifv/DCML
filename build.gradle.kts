@@ -39,7 +39,7 @@ java {
 if (checkProperty("doPublish")) {
     /* mobiTopp publishing process (see .gitlab-ci.yml)
         * Parameters such as "doPublish" must be passed in gradle command:
-        *  - ./gradlew <TASKS> publish -PdoPublish=true -Pparam=value...
+        *  - ./gradlew <TASKS> -PdoPublish=true -Pparam=value...
         * Lookup of parameters doPublish and isRelease returns true if they are specified and their value reads "true".
         * Other required parameters must be specified, otherwise an error is thrown.
         *
@@ -48,11 +48,13 @@ if (checkProperty("doPublish")) {
         *
         * Every merge on main is published to local repo: see deploy-job
         *  - checks: doPublish=true, isRelease=false
+        *  - gradle task: publish
         *  - requires parameters: "localUrl", "localRepoUser" and "localRepoPassword"
         *
         * Public releases must be published manually:
         *  - checks: doPublish=true, isRelease=true
-        *  - requires parameters: "publicUrl", "publicRepoUser" and "publicRepoPassword"
+        *  - gradle tasks: publishToSonatype closeSonatypeStagingRepository
+        *  - requires parameters: sonatypeUsername, sonatypePassword signing.keyId signing.password signing.secretKeyRingFile
         */
 
     project.version = requireProperty("buildVersion")
