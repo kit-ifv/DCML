@@ -59,15 +59,9 @@ class MultinomialLogitArray : CumulateDistributionArray<Any?> {
         var acc = .0 // Immediately track the increments to return the cumulated array instead of the distribution
         // array
 
-        // If the sum is 0 then something went really wrong, and we can only use a uniform distribution
+        // If the sum is 0 then something went really wrong, the caller should now handle this case.
         if(sum == .0) {
             return false
-//            for (i in utilities.indices) {
-//                val probability: Double = 1.0 / utilities.size
-//                utilities[i] = probability + acc
-//                acc += probability
-//            }
-//            return
         }
 
         for (i in utilities.indices) {
