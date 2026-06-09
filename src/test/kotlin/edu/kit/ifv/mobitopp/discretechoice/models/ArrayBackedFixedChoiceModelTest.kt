@@ -47,4 +47,37 @@ class ArrayBackedFixedChoiceModelTest {
 
     }
 
+    @Test
+    fun probability() {
+        val structure = DiscreteStructure<Int, Unit, Unit> {
+            option(1) {
+                .0
+            }
+            option(2) {
+                0.0
+            }
+            option(3) {
+                .0
+            }
+        }
+        val choiceModel = ArrayBackedFixedChoiceModel(
+            utilityAssignment = structure.build(),
+            parameters = Unit,
+            name = "Test build"
+        )
+        val probabilities = context(Unit) {
+            choiceModel.probabilities()
+        }
+        probabilities.values.forEach {
+            assertEquals(it, 1.0 / 3.0, 0.00000001)
+        }
+        context(Unit) {
+            choiceModel.probabilities(setOf(2, 3))
+        }.values.forEach {
+            assertEquals(it, 1.0 / 2.0, 0.00000001)
+        }
+
+
+    }
+
 }

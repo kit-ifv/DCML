@@ -95,9 +95,15 @@ class ArrayBackedFixedChoiceModel<A, C, P>(
 
             keyMap[it] ?: Double.NEGATIVE_INFINITY
         }
-        distributionFunction.probabilities(calculationArray, parameters)
+        val probabilities = runCatching { distributionFunction.probabilities(calculationArray, parameters) }.getOrElse {
+
+            DoubleArray(alternatives.size) {
+                Double.NEGATIVE_INFINITY
+            }
+        }
+
         return utilities.keys.associateWith {
-            calculationArray[getIndex(it)]
+            probabilities[getIndex(it)]
         }
     }
 
