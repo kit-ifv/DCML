@@ -7,7 +7,7 @@ import kotlin.random.Random
  * @property A type of the choosable objects. `A` because of "Alternative".
  * @property C the characteristics influencing the decision.
  */
-interface BasicChoiceModel<A, C> {
+interface BasicChoiceModel<A, in C> {
     val name: String
 
     /**
@@ -26,9 +26,9 @@ interface BasicChoiceModel<A, C> {
     fun select(choices: Array<out A>): A {
         return select(choices.toSet())
     }
-    fun addFilter(filter: ChoiceFilter<A, C>): BasicFilteredChoiceModel<A, C> {
-        return BasicFilteredChoiceModel(this, filter, name)
-    }
 }
 
+fun <A, C> BasicChoiceModel<A, C>.addFilter(filter: ChoiceFilter<A, C>): BasicFilteredChoiceModel<A, C> {
+    return BasicFilteredChoiceModel(this, filter, name)
+}
 

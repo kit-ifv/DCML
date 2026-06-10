@@ -15,7 +15,7 @@ import kotlin.random.Random
  *
  */
 
-class ArrayBackedFixedChoiceModel<A, C, P>(
+class ArrayBackedFixedChoiceModel<A, in C, P>(
     val utilityAssignment: UtilityEnumeration<A, C, P>,
     val distributionFunction: CumulateDistributionArray<P> = MultinomialLogitArray(),
     val selectionFunction: SelectionFunctionArray = WeightedSelection(),

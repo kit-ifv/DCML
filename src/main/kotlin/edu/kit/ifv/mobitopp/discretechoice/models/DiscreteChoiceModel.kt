@@ -14,7 +14,7 @@ import kotlin.random.Random
  * status... whatever, but this is, what the `utilityAssignment` bases its concrete utilityassignment values of each alternative
  * on.)
  */
-data class DiscreteChoiceModel<A, C, P>(
+data class DiscreteChoiceModel<A, in C, P>(
     override val name: String,
     val utilityAssignment: UtilityAssignment<A, C, P>,
     val distributionFunction: DistributionFunction<A, P>,

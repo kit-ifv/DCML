@@ -2,7 +2,7 @@ package edu.kit.ifv.mobitopp.discretechoice.models
 
 import kotlin.random.Random
 
-data class FixedOrderChoiceModel<A, C>(
+data class FixedOrderChoiceModel<A, in C>(
     override val name: String,
     override val choices: Set<A>,
     val filter: ChoiceFilter<A, C>,

@@ -2,7 +2,7 @@ package edu.kit.ifv.mobitopp.discretechoice.models
 
 import kotlin.random.Random
 
-data class RandomChoiceModel<A, C>(override val name: String, override val choices: Set<A>) :
+data class RandomChoiceModel<A, in C>(override val name: String, override val choices: Set<A>) :
     FixedChoiceModel<A, C> {
 
 

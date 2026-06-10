@@ -6,7 +6,7 @@ import kotlin.random.Random
  * When the choice model is based on utilities, we can expect that the calculation of utilities as well as
  * probabilities is inherently available.
  */
-interface UtilityBasedChoiceModel<A, C> : BasicChoiceModel<A, C> {
+interface UtilityBasedChoiceModel<A, in C> : BasicChoiceModel<A, C> {
 
     context(_: C)
     fun utilities(alternatives: Collection<A>): Map<A, Double> {
@@ -27,14 +27,14 @@ interface UtilityBasedChoiceModel<A, C> : BasicChoiceModel<A, C> {
     fun probabilities(utilities: Map<A, Double>): Map<A, Double>
 
 
-    override fun addFilter(filter: ChoiceFilter<A, C>): FilteredChoiceModel<A, C> {
-        return FilteredChoiceModel(this, filter)
-    }
-
     fun fixed(choices: Set<A>): FixedChoiceModel<A, C> {
         return FixedChoiceModel(this, choices)
     }
 
     context(_: C, random: Random)
     fun selectInjected(choices: Set<A>, injections: Map<A, (Double) -> Double>): A
+}
+
+fun <A, C> UtilityBasedChoiceModel<A, C>.select(filter: ChoiceFilter<A, C>): FilteredChoiceModel<A, C> {
+    return FilteredChoiceModel(this, filter)
 }

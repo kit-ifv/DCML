@@ -6,7 +6,7 @@ import kotlin.random.Random
  * In case that we actually have a utility based choice model, we can provide the extra functions like utility and
  * probability.
  */
-open class FilteredChoiceModel<A, C>(
+open class FilteredChoiceModel<A, in C>(
     override val original: UtilityBasedChoiceModel<A, C>,
     filter: ChoiceFilter<A, C>,
 ) : BasicFilteredChoiceModel<A, C>(original, filter, original.name), UtilityBasedChoiceModel<A, C> by original {
@@ -23,8 +23,8 @@ open class FilteredChoiceModel<A, C>(
     override fun utilities(alternatives: Collection<A>): Map<A, Double> {
         return original.utilities(alternatives)
     }
-    override fun addFilter(filter: ChoiceFilter<A, C>): FilteredChoiceModel<A, C> {
-        return FilteredChoiceModel(original, this.filter + filter)
-    }
+}
 
+fun <A, C> FilteredChoiceModel<A, C>.addFilter(filter: ChoiceFilter<A, C>): FilteredChoiceModel<A, C> {
+    return FilteredChoiceModel(this, this.filter + filter)
 }
