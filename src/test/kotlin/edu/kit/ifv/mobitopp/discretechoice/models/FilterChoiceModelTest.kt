@@ -33,8 +33,6 @@ class FilterChoiceModelTest {
             val comparison =  (0..100).map { simpleChoiceModel.select() }.toSet()
             val first =(0..100).map { filterModel.select() }.toSet()
             val second =(0..100).map { secondFilterModel.select() }.toSet()
-
-            filterModel.probabilities()
             assertEquals(comparison.size, 5)
             assertEquals(first.size, 4)
             assertEquals(second.size, 3)

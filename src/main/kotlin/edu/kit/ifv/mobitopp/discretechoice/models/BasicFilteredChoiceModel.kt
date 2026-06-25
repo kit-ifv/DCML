@@ -18,6 +18,7 @@ open class BasicFilteredChoiceModel<A, in C>(
         val filteredChoices = choices.filter { filter.filter(it) }.toSet()
         return original.select(filteredChoices)
     }
+
 }
 
 fun <A, C> BasicFilteredChoiceModel<A, C>.addFilter(filter: ChoiceFilter<A, C>): BasicFilteredChoiceModel<A, C> {

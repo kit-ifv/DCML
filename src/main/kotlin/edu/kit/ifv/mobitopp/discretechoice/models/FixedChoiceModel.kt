@@ -27,7 +27,7 @@ interface FixedChoiceModel<A, in C>: UtilityBasedChoiceModel<A, C> {
     }
 }
 
-data class FixedChoiceModelImpl<A, C>(
+data class FixedChoiceModelImpl<A,in C>(
     val original: UtilityBasedChoiceModel<A, C>,
     override val choices: Set<A>,
 ): UtilityBasedChoiceModel<A, C> by original, FixedChoiceModel<A, C> {
@@ -45,7 +45,9 @@ data class FixedChoiceModelImpl<A, C>(
         return original.select(choices)
     }
 
-
-    fun addFilter(filter: ChoiceFilter<A, C>) = FilteredFixedChoiceModel<A, C>(original, choices, filter)
 }
 
+
+fun <A, C> FixedChoiceModel<A, C>.addFilter(filter: ChoiceFilter<A, C>): FilteredFixedChoiceModel<A, C> {
+    return FilteredFixedChoiceModel(this, choices, filter)
+}
