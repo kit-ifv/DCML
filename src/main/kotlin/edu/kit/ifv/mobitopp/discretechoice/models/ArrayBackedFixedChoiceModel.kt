@@ -5,6 +5,7 @@ import edu.kit.ifv.mobitopp.discretechoice.distribution.MultinomialLogitArray
 import edu.kit.ifv.mobitopp.discretechoice.distribution.probabilities
 import edu.kit.ifv.mobitopp.discretechoice.selection.SelectionFunctionArray
 import edu.kit.ifv.mobitopp.discretechoice.selection.WeightedSelection
+import edu.kit.ifv.mobitopp.discretechoice.utilityassignment.UtilityAssignment
 import edu.kit.ifv.mobitopp.discretechoice.utilityassignment.UtilityEnumeration
 import kotlin.random.Random
 
@@ -16,13 +17,23 @@ import kotlin.random.Random
  */
 
 class ArrayBackedFixedChoiceModel<A, in C, P>(
-    val utilityAssignment: UtilityEnumeration<A, C, P>,
+
+    val utilityAssignment: UtilityAssignment<A, C, P>,
+    override val choices: Set<A>,
     val distributionFunction: CumulateDistributionArray<P> = MultinomialLogitArray(),
     val selectionFunction: SelectionFunctionArray = WeightedSelection(),
     val parameters: P,
     override val name: String,
 ) : FixedChoiceModel<A, C> {
-    override val choices: Set<A> = utilityAssignment.options
+
+    constructor(
+        utilityAssignment: UtilityEnumeration<A, C, P>,
+        distributionFunction: CumulateDistributionArray<P> = MultinomialLogitArray(),
+        selectionFunction: SelectionFunctionArray = WeightedSelection(),
+        parameters: P,
+        name: String,
+    ): this(utilityAssignment, utilityAssignment.options, distributionFunction, selectionFunction, parameters, name)
+
 
 
     private val alternatives: List<A> = choices.toList()

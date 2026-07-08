@@ -28,7 +28,7 @@ interface UtilityBasedChoiceModel<A, in C> : BasicChoiceModel<A, C> {
 
 
     fun fixed(choices: Set<A>): FixedChoiceModel<A, C> {
-        return FixedChoiceModel(this, choices)
+        return FixedChoiceModelImpl(this, choices)
     }
 
     context(_: C, random: Random)
