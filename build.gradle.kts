@@ -22,7 +22,25 @@ dependencies {
 tasks.test {
     useJUnitPlatform()
 }
+tasks.register<JavaExec>("printVectorAssembly") {
+    group = "verification"
+    description = "Compile VectorCheck.add with C2 and print its assembly"
 
+    classpath = sourceSets["jmh"].runtimeClasspath
+    mainClass.set("benchmark/VectorCheck")
+
+    jvmArgs(
+        "-XX:+UnlockDiagnosticVMOptions",
+        "-XX:-TieredCompilation",
+        "-Xbatch",
+        "-XX:CompileThreshold=100",
+        "-XX:+PrintCompilation",
+        "-XX:+PrintAssembly",
+        "-XX:CompileCommand=compileonly,benchmark.VectorCheck::add",
+        "-XX:CompileCommand=print,benchmark.VectorCheck::add",
+        "-XX:PrintAssemblyOptions=intel",
+    )
+}
 kotlin {
     jvmToolchain(25)
     compilerOptions {
