@@ -37,5 +37,4 @@ data class RandomChoiceModel<A, in C>(override val name: String, override val ch
     ): A {
         TODO("Not yet implemented")
     }
-
 }

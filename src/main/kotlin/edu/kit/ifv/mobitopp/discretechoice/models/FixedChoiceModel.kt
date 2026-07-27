@@ -47,13 +47,6 @@ data class FixedChoiceModelImpl<A,in C>(
 
 }
 
-interface TrulyFixedChoiceModel<A, in C> {
-    val choices: Set<A>
-
-    context(characteristic: C, random: Random)
-    fun select(): A
-}
-
 fun <A, C> FixedChoiceModel<A, C>.addFilter(filter: ChoiceFilter<A, C>): FilteredFixedChoiceModel<A, C> {
     return FilteredFixedChoiceModel(this, choices, filter)
 }
