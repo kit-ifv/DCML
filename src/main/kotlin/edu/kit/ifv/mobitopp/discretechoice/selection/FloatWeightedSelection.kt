@@ -1,5 +1,7 @@
 package edu.kit.ifv.mobitopp.discretechoice.selection
 
+import kotlin.random.Random
+
 /**
  * A weighted selection strategy that picks an index from a set of cumulative
  * probabilities based on a given random value.
