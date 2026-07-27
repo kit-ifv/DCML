@@ -4,7 +4,7 @@ package edu.kit.ifv.mobitopp.discretechoice.selection
  * A weighted selection strategy that picks an index from a set of cumulative
  * probabilities based on a given random value.
  *
- * This implementation expects [probabilities] to represent a **cumulative
+ * This implementation expects `probabilities` to represent a **cumulative
  * distribution** (i.e., each entry is the running total of weights up to and
  * including that index, typically normalized so the final entry equals `1.0`),
  * rather than raw/individual weights.
@@ -22,7 +22,7 @@ package edu.kit.ifv.mobitopp.discretechoice.selection
  * // index == 2
  * ```
  *
- * @return -1 if [probabilities.size] == 0.
+ * @return -1 if `probabilities.size == 0`
  */
 class WeightedSelection: SelectionFunctionArray {
     override fun pick(probabilities: DoubleArray, random: Double): Int {
