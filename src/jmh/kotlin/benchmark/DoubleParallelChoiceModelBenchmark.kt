@@ -1,6 +1,10 @@
 package benchmark
 
-import edu.kit.ifv.mobitopp.discretechoice.models.CompiledChoiceModelDouble
+import edu.kit.ifv.mobitopp.discretechoice.distribution.CumulateDistributionArray
+import edu.kit.ifv.mobitopp.discretechoice.distribution.MultinomialLogitArray
+import edu.kit.ifv.mobitopp.discretechoice.models.BatchUtilityChoiceModel
+import edu.kit.ifv.mobitopp.discretechoice.selection.SelectionFunctionArray
+import edu.kit.ifv.mobitopp.discretechoice.selection.WeightedSelection
 import kotlin.concurrent.thread
 import kotlin.math.exp
 import kotlin.math.ln
@@ -8,6 +12,167 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.random.Random
 import kotlin.system.measureNanoTime
+
+fun main() {
+    val alternativeCount = 96
+    val benchmarkIterations = 1_000_000
+    val seed = 42
+    val threadCount = max(1, Runtime.getRuntime().availableProcessors())
+    val localAttributes: ImpedanceDouble =
+        ImpedanceDouble.random(size = alternativeCount)
+    val results = Array(threadCount) { ThreadResultD() }
+    val threads = ArrayList<Thread>(threadCount)
+    val combinedNanoseconds = measureNanoTime {
+        for (threadIndex in 0 until threadCount) {
+            threads += thread(start = true) {
+                val random = Random(seed + threadIndex)
+                val attributes = AttributesDouble.random() // One model per thread avoids accidental shared mutable state.
+                val choiceModel = TestDoubleBatchChoiceModel(localAttributes)
+                val begin = benchmarkIterations.toLong() * threadIndex / threadCount
+                val end = benchmarkIterations.toLong() * (threadIndex + 1) / threadCount
+                val threadResult = results[threadIndex]
+                for (iteration in begin until end) {
+                    attributes.randomize(random)
+                    val selectedIndex =
+                        with(attributes) { with(random) { choiceModel.select() } }
+                    threadResult.checksum += selectedIndex.toLong()
+                }
+            }
+        }
+        for (worker in threads) {
+            worker.join()
+        }
+    }
+    var selectionChecksum = 0L
+    for (result in results) {
+        selectionChecksum += result.checksum
+    }
+    val combinedTotalMs = combinedNanoseconds / 1_000_000.0
+    val wallTimePerChoiceMs = combinedTotalMs / benchmarkIterations
+    val choicesPerSecond =
+        benchmarkIterations / (combinedTotalMs / 1_000.0)
+    println("Threads: $threadCount")
+    println("Total wall time: $combinedTotalMs ms")
+    println("Wall time per choice: $wallTimePerChoiceMs ms")
+    println("Choices per second: $choicesPerSecond")
+    println("Checksum: $selectionChecksum")
+}
+
+class TestDoubleBatchChoiceModel(
+    private val localAttributes: ImpedanceDouble,
+    override val parameters: MyParametersDouble = MyParametersDouble,
+    override val distributionFunction: CumulateDistributionArray<Any?> = MultinomialLogitArray(),
+    override val selectionFunction: SelectionFunctionArray = WeightedSelection()
+) : BatchUtilityChoiceModel<AttributesDouble, MyParametersDouble> {
+    override val size: Int = localAttributes.travelTime.size
+
+    context(characteristic: AttributesDouble)
+    override fun MyParametersDouble.generateUtilitiesArray(): DoubleArray {
+        val result = DoubleArray(size)
+
+        val attrBase =
+            (b_attr + ageEffects[characteristic.ageCode] + employmentEffects[characteristic.employmentCode] + shift_zk_on_attr * characteristic.hasCommuterTicket + shift_carav_on_attr * characteristic.hasGuaranteedCar + shift_high_inc_on_attr * characteristic.hasHighIncome + shift_uml_on_attr * characteristic.isUmland + distanceEffects[characteristic.distanceCode])
+        val oevBase =
+            (b_logsum_pt_active + ageEffectsPt[characteristic.ageCode] + employmentEffectsPt[characteristic.employmentCode] + shift_zk_on_logsum_pt_active * characteristic.hasCommuterTicket + shift_carav_on_logsum_pt_active * characteristic.hasGuaranteedCar + shift_high_inc_on_logsum_pt_active * characteristic.hasHighIncome + shift_uml_on_logsum_pt_active * characteristic.isUmland)
+        val baseDrive =
+            (b_logsum_drive + ageEffectsDrive[characteristic.ageCode] + employmentEffectsDrive[characteristic.employmentCode] + shift_zk_on_logsum_drive * characteristic.hasCommuterTicket + shift_carav_on_logsum_drive * characteristic.hasGuaranteedCar + shift_high_inc_on_logsum_drive * characteristic.hasHighIncome + shift_uml_on_logsum_drive * characteristic.isUmland)
+        val oevFix =
+            (b_logsum_pt_active_fix + ageEffectsPtFix[characteristic.ageCode] + employmentEffectsPtFix[characteristic.employmentCode] + shift_zk_on_logsum_pt_active_fix * characteristic.hasCommuterTicket + shift_carav_on_logsum_pt_active_fix * characteristic.hasGuaranteedCar + shift_high_inc_on_logsum_pt_active_fix * characteristic.hasHighIncome + shift_uml_on_logsum_pt_active_fix * characteristic.isUmland)
+        val baseDriveFix =
+            (b_logsum_drive_fix + ageEffectsDriveFix[characteristic.ageCode] + employmentEffectsDriveFix[characteristic.employmentCode] + shift_zk_on_logsum_drive_fix * characteristic.hasCommuterTicket + shift_carav_on_logsum_drive_fix * characteristic.hasGuaranteedCar + shift_high_inc_on_logsum_drive_fix * characteristic.hasHighIncome + shift_uml_on_logsum_drive_fix * characteristic.isUmland)
+        for (i in 0 until size) {
+            val attractivityLogged = ln(min(localAttributes.attractivities[i], max_attractivity))
+            val oevLogsum = ln(
+                characteristic.availabilities[Mode.PT.ordinal] * exp(
+                    asc_oev + b_tt_oev * min(
+                        localAttributes.travelTimeoev[i],
+                        999.0,
+                    ) + b_cost_oev * min(
+                        localAttributes.travelCostoev[i],
+                        999.0,
+                    ) + b_zuab_oev * min(
+                        localAttributes.zuabOev[i],
+                        999.0,
+                    ) + actTypesPTFix[characteristic.activityTypeCode],
+                ) + characteristic.availabilities[Mode.PED.ordinal] * exp(
+                    asc_fuss + b_tt_fuss * min(
+                        localAttributes.travelTimefuss[i],
+                        999.0,
+                    ) + actTypesPedFix[characteristic.activityTypeCode],
+                ) + characteristic.availabilities[Mode.BIKE.ordinal] * exp(
+                    asc_rad + b_tt_rad * min(
+                        localAttributes.travelTimerad[i],
+                        999.0,
+                    ) + actTypesBikeFix[characteristic.activityTypeCode],
+                ),
+            )
+            val logsumDrive = ln(
+                characteristic.availabilities[Mode.CAR.ordinal] * exp(
+                    asc_pkw + b_tt_pkw * min(
+                        localAttributes.travelTimepkw[i],
+                        999.0,
+                    ) + b_cost_pkw * min(
+                        localAttributes.travelCostpkw[i],
+                        999.0,
+                    ) + b_zuab_pkw * min(
+                        localAttributes.zuabCar[i],
+                        999.0,
+                    ) + actTypesCarFix[characteristic.activityTypeCode],
+                ) + characteristic.availabilities[Mode.PASSENGER.ordinal] * exp(
+                    asc_mf + b_tt_mf_taxi * min(
+                        localAttributes.travelTimeMf[i],
+                        999.0,
+                    ) + actTypesMfFix[characteristic.activityTypeCode],
+                ),
+            )
+            val uOev = (asc_oev + b_tt_oev * min(localAttributes.travelTimeFixoev[i], 999.0) + b_cost_oev * min(
+                localAttributes.travelCostFixoev[i],
+                999.0,
+            ) + b_zuab_oev * min(localAttributes.zuabOevFix[i], 999.0) + actTypesPTFix[characteristic.activityTypeCode])
+            val oevExp = exp(uOev)
+            val uPed = (asc_fuss + b_tt_fuss * min(
+                localAttributes.travelTimeFixfuss[i],
+                999.0,
+            ) + actTypesPedFix[characteristic.activityTypeCode])
+            val pedExp = exp(uPed)
+            val bikeExp = exp(
+                asc_rad + b_tt_rad * min(
+                    localAttributes.travelTimeFixrad[i],
+                    999.0,
+                ) + actTypesBikeFix[characteristic.activityTypeCode],
+            )
+            val logsumOevFix =
+                ln(characteristic.availabilities[Mode.PT.ordinal] * oevExp +
+                        characteristic.availabilities[Mode.PED.ordinal] * pedExp +
+                        characteristic.availabilities[Mode.BIKE.ordinal] * bikeExp)
+            val logsumDriveFix = ln(
+                characteristic.availabilities[Mode.CAR.ordinal] * exp(
+                    asc_pkw + b_tt_pkw * min(
+                        localAttributes.travelTimeFixpkw[i],
+                        999.0,
+                    ) + b_cost_pkw * min(localAttributes.travelCostFixpkw[i], 999.0) + b_zuab_pkw * min(
+                        localAttributes.zuabCarFix[i],
+                        999.0,
+                    ) + actTypesCarFix[characteristic.activityTypeCode],
+                ) + characteristic.availabilities[Mode.PASSENGER.ordinal] * exp(
+                    asc_mf + b_tt_mf_taxi * min(
+                        localAttributes.travelTimeMfFix[i],
+                        999.0,
+                    ) + actTypesMfFix[characteristic.activityTypeCode],
+                ),
+            )
+            result[i] =
+                (attrBase * attractivityLogged + distanceEffectsGlobal[characteristic.distanceCode] +
+                        oevBase * oevLogsum +
+                        baseDrive * logsumDrive +
+                        oevFix * logsumOevFix +
+                        baseDriveFix * logsumDriveFix)
+        }
+        return result
+    }
+}
+
+private data class ThreadResultD(var checksum: Long = 0L)
 
 
 class ImpedanceDouble(
@@ -117,6 +282,8 @@ class AttributesDouble(
         distanceCode = random.nextInt(0, 3)
         availabilities.forEachIndexed { index, value ->
             availabilities[index] = random.nextBooleanAsDouble()
+            availabilities[0] = 1.0
+            availabilities[3] = 1.0 // guarantee one mode is available and logsums are not -negative infinity
         }
     }
     companion object {
@@ -133,6 +300,11 @@ class AttributesDouble(
                 random.nextInt(0, 3),
                 DoubleArray(5) {
                     random.nextBooleanAsDouble()
+                }.let {
+                    DoubleArray(5) { index ->
+                        if (index == 3 || index == 0) 1.0
+                        else it[index]
+                    }
                 }
             )
         }
@@ -144,8 +316,6 @@ fun Random.nextBooleanAsDouble(): Double {
 }
 
 object MyParametersDouble {
-
-
     val asc_fuss: Double = (3.76685346228208 - 1).toDouble()
     val asc_rad: Double = (1.86423253977476).toDouble()
     val asc_bs: Double = (-2.74748353864304).toDouble()
@@ -348,163 +518,4 @@ object MyParametersDouble {
         0.0,
     )
     val employmentEffectsDrive = doubleArrayOf(shift_educ_on_logsum_drive, shift_arb_on_logsum_drive, 0.0)
-}
-
-
-class MyDoubleCompiledChoiceModel(private val localAttributes: ImpedanceDouble) : CompiledChoiceModelDouble<Attributes, Unit>() {
-    override val choices: Set<Int> = (0..localAttributes.travelTime.size).toSet()
-    context(attributes: Attributes, random: Random)
-    override fun select(): Int {
-        val size = localAttributes.travelTime.size
-        val result = DoubleArray(size)
-        MyParametersDouble.run {
-
-
-            val attrBase =
-                (b_attr + ageEffects[attributes.ageCode] + employmentEffects[attributes.employmentCode] + shift_zk_on_attr * attributes.hasCommuterTicket + shift_carav_on_attr * attributes.hasGuaranteedCar + shift_high_inc_on_attr * attributes.hasHighIncome + shift_uml_on_attr * attributes.isUmland + distanceEffects[attributes.distanceCode])
-            val oevBase =
-                (b_logsum_pt_active + ageEffectsPt[attributes.ageCode] + employmentEffectsPt[attributes.employmentCode] + shift_zk_on_logsum_pt_active * attributes.hasCommuterTicket + shift_carav_on_logsum_pt_active * attributes.hasGuaranteedCar + shift_high_inc_on_logsum_pt_active * attributes.hasHighIncome + shift_uml_on_logsum_pt_active * attributes.isUmland)
-            val baseDrive =
-                (b_logsum_drive + ageEffectsDrive[attributes.ageCode] + employmentEffectsDrive[attributes.employmentCode] + shift_zk_on_logsum_drive * attributes.hasCommuterTicket + shift_carav_on_logsum_drive * attributes.hasGuaranteedCar + shift_high_inc_on_logsum_drive * attributes.hasHighIncome + shift_uml_on_logsum_drive * attributes.isUmland)
-            val oevFix =
-                (b_logsum_pt_active_fix + ageEffectsPtFix[attributes.ageCode] + employmentEffectsPtFix[attributes.employmentCode] + shift_zk_on_logsum_pt_active_fix * attributes.hasCommuterTicket + shift_carav_on_logsum_pt_active_fix * attributes.hasGuaranteedCar + shift_high_inc_on_logsum_pt_active_fix * attributes.hasHighIncome + shift_uml_on_logsum_pt_active_fix * attributes.isUmland)
-            val baseDriveFix =
-                (b_logsum_drive_fix + ageEffectsDriveFix[attributes.ageCode] + employmentEffectsDriveFix[attributes.employmentCode] + shift_zk_on_logsum_drive_fix * attributes.hasCommuterTicket + shift_carav_on_logsum_drive_fix * attributes.hasGuaranteedCar + shift_high_inc_on_logsum_drive_fix * attributes.hasHighIncome + shift_uml_on_logsum_drive_fix * attributes.isUmland)
-            for (i in 0 until size) {
-                val attractivityLogged = ln(min(localAttributes.attractivities[i], max_attractivity))
-                val oevLogsum = ln(
-                    attributes.availabilities[Mode.PT.ordinal] * exp(
-                        asc_oev + b_tt_oev * min(
-                            localAttributes.travelTimeoev[i],
-                            999.0,
-                        ) + b_cost_oev * min(
-                            localAttributes.travelCostoev[i],
-                            999.0,
-                        ) + b_zuab_oev * min(
-                            localAttributes.zuabOev[i],
-                            999.0,
-                        ) + actTypesPTFix[attributes.activityTypeCode],
-                    ) + attributes.availabilities[Mode.PED.ordinal] * exp(
-                        asc_fuss + b_tt_fuss * min(
-                            localAttributes.travelTimefuss[i],
-                            999.0,
-                        ) + actTypesPedFix[attributes.activityTypeCode],
-                    ) + attributes.availabilities[Mode.BIKE.ordinal] * exp(
-                        asc_rad + b_tt_rad * min(
-                            localAttributes.travelTimerad[i],
-                            999.0,
-                        ) + actTypesBikeFix[attributes.activityTypeCode],
-                    ),
-                )
-                val logsumDrive = ln(
-                    attributes.availabilities[Mode.CAR.ordinal] * exp(
-                        asc_pkw + b_tt_pkw * min(
-                            localAttributes.travelTimepkw[i],
-                            999.0,
-                        ) + b_cost_pkw * min(
-                            localAttributes.travelCostpkw[i],
-                            999.0,
-                        ) + b_zuab_pkw * min(
-                            localAttributes.zuabCar[i],
-                            999.0,
-                        ) + actTypesCarFix[attributes.activityTypeCode],
-                    ) + attributes.availabilities[Mode.PASSENGER.ordinal] * exp(
-                        asc_mf + b_tt_mf_taxi * min(
-                            localAttributes.travelTimeMf[i],
-                            999.0,
-                        ) + actTypesMfFix[attributes.activityTypeCode],
-                    ),
-                )
-                val uOev = (asc_oev + b_tt_oev * min(localAttributes.travelTimeFixoev[i], 999.0) + b_cost_oev * min(
-                    localAttributes.travelCostFixoev[i],
-                    999.0,
-                ) + b_zuab_oev * min(localAttributes.zuabOevFix[i], 999.0) + actTypesPTFix[attributes.activityTypeCode])
-                val oevExp = exp(uOev)
-                val uPed = (asc_fuss + b_tt_fuss * min(
-                    localAttributes.travelTimeFixfuss[i],
-                    999.0,
-                ) + actTypesPedFix[attributes.activityTypeCode])
-                val pedExp = exp(uPed)
-                val bikeExp = exp(
-                    asc_rad + b_tt_rad * min(
-                        localAttributes.travelTimeFixrad[i],
-                        999.0,
-                    ) + actTypesBikeFix[attributes.activityTypeCode],
-                )
-                val logsumOevFix =
-                    ln(attributes.availabilities[Mode.PT.ordinal] * oevExp + attributes.availabilities[Mode.PED.ordinal] * pedExp + attributes.availabilities[Mode.BIKE.ordinal] * bikeExp)
-                val logsumDriveFix = ln(
-                    attributes.availabilities[Mode.CAR.ordinal] * exp(
-                        asc_pkw + b_tt_pkw * min(
-                            localAttributes.travelTimeFixpkw[i],
-                            999.0,
-                        ) + b_cost_pkw * min(localAttributes.travelCostFixpkw[i], 999.0) + b_zuab_pkw * min(
-                            localAttributes.zuabCarFix[i],
-                            999.0,
-                        ) + actTypesCarFix[attributes.activityTypeCode],
-                    ) + attributes.availabilities[Mode.PASSENGER.ordinal] * exp(
-                        asc_mf + b_tt_mf_taxi * min(
-                            localAttributes.travelTimeMfFix[i],
-                            999.0,
-                        ) + actTypesMfFix[attributes.activityTypeCode],
-                    ),
-                )
-                result[i] =
-                    (attrBase * attractivityLogged + distanceEffectsGlobal[attributes.distanceCode] + oevBase * oevLogsum + baseDrive * logsumDrive + oevFix * logsumOevFix + baseDriveFix * logsumDriveFix)
-            }
-
-
-        }
-
-        distributionFunction.tryCumulateProbabilities(result, null)
-        return selectionFunction.calculateSelection(result, random)
-    }
-
-}
-
-private data class ThreadResultD(var checksum: Long = 0L)
-
-fun main() {
-    val alternativeCount = 96
-    val benchmarkIterations = 1000000
-    val seed = 42
-    val threadCount = max(1, Runtime.getRuntime().availableProcessors())
-    val localAttributes: Impedance =
-        Impedance.random(size = alternativeCount)
-    val results = Array(threadCount) { ThreadResultD() }
-    val threads = ArrayList<Thread>(threadCount)
-    val combinedNanoseconds = measureNanoTime {
-        for (threadIndex in 0 until threadCount) {
-            threads += thread(start = true) {
-                val random = Random(seed + threadIndex)
-                val attributes = Attributes.random() // One model per thread avoids accidental shared mutable state. 
-                val choiceModel = MyCompiledChoiceModel(localAttributes)
-                val begin = benchmarkIterations.toLong() * threadIndex / threadCount
-                val end = benchmarkIterations.toLong() * (threadIndex + 1) / threadCount
-                val threadResult = results[threadIndex]
-                for (iteration in begin until end) {
-                    attributes.randomize(random)
-                    val selectedIndex =
-                        with(attributes) { with(random) { choiceModel.select() } }
-                    threadResult.checksum += selectedIndex.toLong()
-                }
-            }
-        }
-        for (worker in threads) {
-            worker.join()
-        }
-    }
-    var selectionChecksum = 0L
-    for (result in results) {
-        selectionChecksum += result.checksum
-    }
-    val combinedTotalMs = combinedNanoseconds / 1_000_000.0
-    val wallTimePerChoiceMs = combinedTotalMs / benchmarkIterations
-    val choicesPerSecond =
-        benchmarkIterations / (combinedTotalMs / 1_000.0)
-    println("Threads: $threadCount")
-    println("Total wall time: $combinedTotalMs ms")
-    println("Wall time per choice: $wallTimePerChoiceMs ms")
-    println("Choices per second: $choicesPerSecond")
-    println("Checksum: $selectionChecksum")
 }

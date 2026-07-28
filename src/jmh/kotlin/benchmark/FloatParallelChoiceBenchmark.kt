@@ -38,7 +38,7 @@ fun main() {
                         Attributes.random()
 
                     val choiceModel =
-                        MyCompiledChoiceModel(localAttributes)
+                        TestFloatBatchModel(localAttributes)
 
                     var localChecksum = 0L
 

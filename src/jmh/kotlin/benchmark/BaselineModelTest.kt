@@ -2,7 +2,6 @@ package benchmark
 
 import edu.kit.ifv.mobitopp.discretechoice.structure.DiscreteStructure
 import edu.kit.ifv.mobitopp.discretechoice.utilityassignment.multinomialLogit
-import org.openjdk.jmh.infra.Blackhole
 import kotlin.random.Random
 
 

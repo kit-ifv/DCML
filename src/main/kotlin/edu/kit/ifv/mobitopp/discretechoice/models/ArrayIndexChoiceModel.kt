@@ -46,7 +46,7 @@ abstract class CompiledChoiceModelDouble<C, P>: FixedChoiceModel<Int, C> {
 
 
 
-abstract class CompiledChoiceModel<C, P>: FixedChoiceModel<Int, C> {
+abstract class CompiledChoiceModel<C, P>: TrulyFixedChoiceModel<Int, C> {
     protected val alternatives: IntArray = IntArray(4)
 
     override val choices: Set<Int> = alternatives.toSet()
@@ -63,97 +63,4 @@ abstract class CompiledChoiceModel<C, P>: FixedChoiceModel<Int, C> {
         )
         return alternatives[outputIdx]
     }
-
-    /**
-     * @param random some random generator.
-     * @param choices the set of alternatives one is chosen from.
-     * @return one chosen alternative
-     */
-    context(_: C, _: Random)
-    override fun select(choices: Set<Int>): Int {
-        TODO("Not yet implemented")
-    }
-
-    override fun probabilities(utilities: Map<Int, Double>): Map<Int, Double> {
-        TODO("Not yet implemented")
-    }
-
-    context(_: C)
-    override fun utility(alternative: Int): Double {
-        TODO("Not yet implemented")
-    }
-
-    context(_: C, random: Random)
-    override fun selectInjected(
-        choices: Set<Int>,
-        injections: Map<Int, (Double) -> Double>,
-    ): Int {
-        TODO("Not yet implemented")
-    }
-
-
-    override val name: String
-        get() = TODO("Not yet implemented")
 }
-
-
-//class ArrayIndexChoiceModel<C, P>(
-//    private val utilityFunction: UtilityFunction<Int, C, P>
-//): FixedChoiceModel<Int, C> {
-//
-//    private val alternatives: IntArray = TODO()
-//    private val distributionFunction = FloatMultinomialLogitArray()
-//    private val selectionFunction = FloatWeightedSelection()
-//    override val choices: Set<Int> = alternatives.toSet()
-//
-//    context(imop: C, random: Random)
-//    override fun select(): Int {
-//        val t = imop.travelTimeCar
-//        val p = imop.travelTimePed
-//        val probs = FloatArray(alternatives.size) { index ->
-//            t[index] + p[index]
-//
-//        }
-//        return selectInternal(probs)
-//    }
-//    context(random: Random)
-//    private inline fun selectInternal(array: DoubleArray, fallbackOptions: () -> Collection<Int> = { choices }): Int {
-//        val success = distributionFunction.tryCumulateProbabilities(array, null)
-//        if (!success) {
-//            return fallbackOptions().random(random)
-//        }
-//        val outputIdx = selectionFunction.calculateSelection(
-//            array, random
-//        )
-//        return alternatives[outputIdx]
-//    }
-//    /**
-//     * @param random some random generator.
-//     * @param choices the set of alternatives one is chosen from.
-//     * @return one chosen alternative
-//     */
-//    context(_: ImpedanceLeech, _: Random)
-//    override fun select(choices: Set<Int>): Int {
-//        TODO("Not yet implemented")
-//    }
-//
-//    override fun probabilities(utilities: Map<Int, Double>): Map<Int, Double> {
-//        TODO("Not yet implemented")
-//    }
-//
-//    context(_: ImpedanceLeech)
-//    override fun utility(alternative: Int): Double {
-//        TODO("Not yet implemented")
-//    }
-//
-//    context(_: ImpedanceLeech, random: Random)
-//    override fun selectInjected(
-//        choices: Set<Int>,
-//        injections: Map<Int, (Double) -> Double>,
-//    ): Int {
-//        TODO("Not yet implemented")
-//    }
-//
-//    override val name: String
-//        get() = TODO("Not yet implemented")
-//}
