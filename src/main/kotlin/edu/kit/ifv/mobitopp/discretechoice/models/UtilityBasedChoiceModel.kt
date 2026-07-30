@@ -31,6 +31,9 @@ interface UtilityBasedChoiceModel<A, in C> : BasicChoiceModel<A, C> {
         return FixedChoiceModelImpl(this, choices)
     }
 
+    /**
+     * @param injections a map, which maps the generated utilities for each alternative to some other utility.
+     */
     context(_: C, random: Random)
     fun selectInjected(choices: Set<A>, injections: Map<A, (Double) -> Double>): A
 }

@@ -10,7 +10,7 @@ import kotlin.random.Random
  * This is a choice model, that is fixed, so it always selects out of the same set of alternatives. It also works on
  * indices, so the returned alternative is an integer in 0 inclusive [size] exclusive.
  */
-interface BatchUtilityChoiceModel<C, P>: TrulyFixedChoiceModel<Int, C> {
+interface BatchUtilityChoiceModel<C, P>: FixedChoiceModel<Int, C> {
     val parameters: P
     val size: Int
     val distributionFunction: CumulateDistributionArray<Any?>
@@ -42,7 +42,7 @@ interface BatchUtilityChoiceModel<C, P>: TrulyFixedChoiceModel<Int, C> {
  * indices, so the returned alternative is an integer in 0 inclusive [size] exclusive. This works on float arrays
  * internally.
  */
-interface FloatBatchUtilityChoiceModel<C, P>: TrulyFixedChoiceModel<Int, C> {
+interface FloatBatchUtilityChoiceModel<C, P>: FixedChoiceModel<Int, C> {
     val parameters: P
     val size: Int
     val distributionFunction: FloatCumulateDistributionArray<Any?>
