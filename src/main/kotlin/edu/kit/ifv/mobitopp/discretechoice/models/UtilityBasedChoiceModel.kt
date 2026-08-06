@@ -24,6 +24,21 @@ interface UtilityBasedChoiceModel<A, in C> : BasicChoiceModel<A, C> {
     }
     context(_: C)
     fun probabilities(vararg alternatives: A): Map<A, Double> = probabilities(alternatives.toSet())
+
+    /**
+     * Converts a map of utility values into a corresponding map of selection
+     * probabilities.
+     *
+     * @param utilities A mapping from each alternative to its computed utility
+     *                  value. Utilities can be any real number. The relative
+     *                  differences drive the probability outcomes. (Depending on the implementation of this function,
+     *                  utilities have to be in a certain range. It is recommended to document this behavior
+     *                  separately).
+     * @return A mapping from each alternative to its selection probability.
+     *         All probabilities sum to 1.0 across all entries.
+     *
+     * @throws IllegalArgumentException if [utilities] is empty.
+     */
     fun probabilities(utilities: Map<A, Double>): Map<A, Double>
 
 
