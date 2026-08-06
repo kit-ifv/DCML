@@ -28,8 +28,8 @@ abstract class BatchUtilityChoiceModel<C, P, A>(
     val distributionFunction: CumulateDistributionArray<Any?> = MultinomialLogitArray(),
     val selectionFunction: SelectionFunctionArray = WeightedSelection(),
 ): FixedChoiceModel<A, C> {
-    private val alternativeToIndex: Map<A, Int> = choices.withIndex().associate{ it.value to it.index }
-    private val indexToAlternative: Map<Int, A> =  choices.withIndex().associate{ it.index to it.value}
+    private val alternativeToIndex: Map<A, Int> = choices.toList().withIndex().associate{ it.value to it.index }
+    private val indexToAlternative: Map<Int, A> =  choices.toList().withIndex().associate{ it.index to it.value}
 
     /**
      * Generates all utilities for a situation in one go. The array probabilities have to have the size of [choices.size].
@@ -235,11 +235,14 @@ abstract class FloatBatchUtilityChoiceModel<C, P, A>(
  * This class was created to enable enriching the characteristic with more or arbitrary information.
  */
 abstract class CharacteristicMapperChoiceModel<A, C1, C2>(
-    val delegateChoiceModel: FixedChoiceModel<A, C2>,
-    override val choices: Set<A> = delegateChoiceModel.choices,
-    override val name: String = "Wrapped-${delegateChoiceModel.name}",
 ): FixedChoiceModel<A, C1>{
-
+    abstract val delegateChoiceModel: FixedChoiceModel<A, C2>
+    override val choices: Set<A> by lazy {
+        delegateChoiceModel.choices
+    }
+    override val name: String by lazy {
+        "Wrapped-${delegateChoiceModel.name}"
+    }
     context(characteristic: C1)
     abstract fun characteristicConverter(): C2
 
