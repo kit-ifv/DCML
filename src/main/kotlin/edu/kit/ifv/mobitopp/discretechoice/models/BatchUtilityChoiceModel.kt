@@ -65,7 +65,7 @@ abstract class BatchUtilityChoiceModel<C, P, A>(
             utilities[it] ?: Double.NEGATIVE_INFINITY
         }.toTypedArray().toDoubleArray()
         if (!distributionFunction.tryCumulateProbabilities(bufferArray, parameters)) {
-            error("Distribution function could not cumulate probabilities for the given array $bufferArray")
+            error("Distribution function could not cumulate probabilities for the given array ${bufferArray.contentToString()}")
         }
         return utilities.mapValues { (alternative, _) ->
             val alternativeIndex = alternativeToIndex[alternative]!!
@@ -176,7 +176,7 @@ abstract class FloatBatchUtilityChoiceModel<C, P, A>(
             utilities[it]?.toFloat() ?: Float.NEGATIVE_INFINITY
         }.toTypedArray().toFloatArray()
         if (!distributionFunction.tryCumulateProbabilities(bufferArray, parameters)) {
-            error("Distribution function could not cumulate probabilities for the given array $bufferArray")
+            error("Distribution function could not cumulate probabilities for the given array ${bufferArray.contentToString()}")
         }
         return utilities.mapValues { (alternative, _) ->
             // probabilities are cumulated
@@ -226,5 +226,59 @@ abstract class FloatBatchUtilityChoiceModel<C, P, A>(
         }
         val selectedIndex = selectionFunction.calculateSelection(filteredUtilities, random)
         return indexToAlternative[selectedIndex]!!
+    }
+}
+
+/**
+ * This is a FixedChoiceModel that delegates all calls to the delegateChoiceModel. It uses the [characteristicConverter]
+ * to map the given characteristic to the required characteristic of the delegate.
+ * This class was created to enable enriching the characteristic with more or arbitrary information.
+ */
+abstract class CharacteristicMapperChoiceModel<A, C1, C2>(
+    val delegateChoiceModel: FixedChoiceModel<A, C2>,
+    override val choices: Set<A> = delegateChoiceModel.choices,
+    override val name: String = "Wrapped-${delegateChoiceModel.name}",
+): FixedChoiceModel<A, C1>{
+
+    context(characteristic: C1)
+    abstract fun characteristicConverter(): C2
+
+    context(_: C1, random: Random)
+    override fun select(): A {
+        val delegateCharacteristic = characteristicConverter()
+        context(delegateCharacteristic) {
+            return delegateChoiceModel.select()
+        }
+    }
+
+    context(_: C1, _: Random)
+    override fun select(choices: Set<A>): A {
+        val delegateCharacteristic = characteristicConverter()
+        context(delegateCharacteristic) {
+            return delegateChoiceModel.select(choices = choices)
+        }
+    }
+
+    context(_: C1)
+    override fun utility(alternative: A): Double {
+        val delegateCharacteristic = characteristicConverter()
+        context(delegateCharacteristic) {
+            return delegateChoiceModel.utility(alternative = alternative)
+        }
+    }
+
+    override fun probabilities(utilities: Map<A, Double>): Map<A, Double> {
+        return delegateChoiceModel.probabilities(utilities = utilities)
+    }
+
+    context(_: C1, random: Random)
+    override fun selectInjected(
+        choices: Set<A>,
+        injections: Map<A, (Double) -> Double>
+    ): A {
+        val delegateCharacteristic = characteristicConverter()
+        context(delegateCharacteristic) {
+            return delegateChoiceModel.selectInjected(choices = choices, injections = injections)
+        }
     }
 }
