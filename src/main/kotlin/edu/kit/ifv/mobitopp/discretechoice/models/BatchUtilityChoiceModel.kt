@@ -28,8 +28,12 @@ abstract class BatchUtilityChoiceModel<C, P, A>(
     val distributionFunction: CumulateDistributionArray<Any?> = MultinomialLogitArray(),
     val selectionFunction: SelectionFunctionArray = WeightedSelection(),
 ): FixedChoiceModel<A, C> {
-    private val alternativeToIndex: Map<A, Int> = choices.toList().withIndex().associate{ it.value to it.index }
-    private val indexToAlternative: Map<Int, A> =  choices.toList().withIndex().associate{ it.index to it.value}
+    private val alternativeToIndex: Map<A, Int> by lazy {
+        choices.toList().withIndex().associate{ it.value to it.index }
+    }
+    private val indexToAlternative: Map<Int, A> by lazy {
+        choices.toList().withIndex().associate{ it.index to it.value}
+    }
 
     /**
      * Generates all utilities for a situation in one go. The array probabilities have to have the size of [choices.size].
