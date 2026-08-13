@@ -60,11 +60,13 @@ fun main() {
 
 class TestDoubleBatchChoiceModel(
     private val localAttributes: ImpedanceDouble,
-    override val parameters: MyParametersDouble = MyParametersDouble,
-    override val distributionFunction: CumulateDistributionArray<Any?> = MultinomialLogitArray(),
-    override val selectionFunction: SelectionFunctionArray = WeightedSelection()
-) : BatchUtilityChoiceModel<AttributesDouble, MyParametersDouble> {
-    override val size: Int = localAttributes.travelTime.size
+    parameters: MyParametersDouble = MyParametersDouble,
+    override val name: String = "testModel"
+) : BatchUtilityChoiceModel<AttributesDouble, MyParametersDouble, Int>(
+    parameters = parameters,
+    choices = IntArray(localAttributes.travelTime.size){it}.toSet()
+) {
+    val size: Int = localAttributes.travelTime.size
 
     context(characteristic: AttributesDouble)
     override fun MyParametersDouble.generateUtilitiesArray(): DoubleArray {

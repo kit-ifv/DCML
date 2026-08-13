@@ -2,8 +2,10 @@ package edu.kit.ifv.mobitopp.discretechoice.models
 
 import edu.kit.ifv.mobitopp.discretechoice.distribution.CumulateDistributionArray
 import edu.kit.ifv.mobitopp.discretechoice.distribution.FloatCumulateDistributionArray
+import edu.kit.ifv.mobitopp.discretechoice.distribution.FloatMultinomialLogitArray
 import edu.kit.ifv.mobitopp.discretechoice.distribution.MultinomialLogitArray
 import edu.kit.ifv.mobitopp.discretechoice.selection.FloatSelectionFunctionArray
+import edu.kit.ifv.mobitopp.discretechoice.selection.FloatWeightedSelection
 import edu.kit.ifv.mobitopp.discretechoice.selection.SelectionFunctionArray
 import edu.kit.ifv.mobitopp.discretechoice.selection.WeightedSelection
 import kotlin.collections.toFloatArray
@@ -25,15 +27,14 @@ import kotlin.random.Random
  */
 abstract class BatchUtilityChoiceModel<C, P, A>(
     val parameters: P,
+    final override val choices: Set<A>,
     val distributionFunction: CumulateDistributionArray<Any?> = MultinomialLogitArray(),
     val selectionFunction: SelectionFunctionArray = WeightedSelection(),
 ): FixedChoiceModel<A, C> {
     private val alternativeToIndex: Map<A, Int> by lazy {
         choices.toList().withIndex().associate{ it.value to it.index }
     }
-    private val indexToAlternative: Map<Int, A> by lazy {
-        choices.toList().withIndex().associate{ it.index to it.value}
-    }
+    val alternatives = choices.toList()
 
     /**
      * Generates all utilities for a situation in one go. The array probabilities have to have the size of [choices.size].
@@ -50,7 +51,7 @@ abstract class BatchUtilityChoiceModel<C, P, A>(
             throw IllegalStateException("'$name'-Model: Failed to cumulate probabilities, which should be impossible")
         }
         val selectedIndex = selectionFunction.calculateSelection(array, random)
-        return indexToAlternative[selectedIndex]!!
+        return alternatives[selectedIndex]!!
     }
 
     /**
@@ -73,7 +74,7 @@ abstract class BatchUtilityChoiceModel<C, P, A>(
         }
         return utilities.mapValues { (alternative, _) ->
             val alternativeIndex = alternativeToIndex[alternative]!!
-            val previousProb = bufferArray[alternativeIndex - 1] ?: 0.0
+            val previousProb = bufferArray.getOrElse(alternativeIndex - 1){ 0.0 }
             val probCumulated = bufferArray[alternativeIndex]
             probCumulated - previousProb // de-cumulate probabilities
         }
@@ -89,7 +90,7 @@ abstract class BatchUtilityChoiceModel<C, P, A>(
         require(choices.containsAll(injections.keys)) { "Inconsistent parameters."}
         val utilities = parameters.generateUtilitiesArray()
         val filteredUtilities = DoubleArray(this.choices.size) { index ->
-            val alternative = indexToAlternative[index]
+            val alternative = alternatives[index]
             if (choices.contains(alternative)) {
                 injections[alternative]?.invoke(utilities[index]) ?: utilities[index]
             } else Double.NEGATIVE_INFINITY
@@ -99,7 +100,7 @@ abstract class BatchUtilityChoiceModel<C, P, A>(
             error("Could not cumulate probabilities. From the given utilities: ${filteredUtilities.joinToString(", ")}")
         }
         val selectedIndex = selectionFunction.calculateSelection(filteredUtilities, random)
-        return indexToAlternative[selectedIndex]!!
+        return alternatives[selectedIndex]!!
     }
 
     context(_: C, random: Random)
@@ -107,14 +108,14 @@ abstract class BatchUtilityChoiceModel<C, P, A>(
         if (!this.choices.containsAll(choices)) error("model '$name' called with invalid indices.")
         val utilities = parameters.generateUtilitiesArray()
         val filteredUtilities = DoubleArray(this.choices.size) { index ->
-            val alternative = indexToAlternative[index]
+            val alternative = alternatives[index]
             if (choices.contains(alternative)) utilities[index] else Double.NEGATIVE_INFINITY
         }
         if (!distributionFunction.tryCumulateProbabilities(filteredUtilities, null)) {
             error("Could not cumulate probabilities. From the given utilities: ${filteredUtilities.joinToString(", ")}")
         }
         val selectedIndex = selectionFunction.calculateSelection(filteredUtilities, random)
-        return indexToAlternative[selectedIndex]!!
+        return alternatives[selectedIndex]!!
     }
 }
 
@@ -135,9 +136,10 @@ abstract class BatchUtilityChoiceModel<C, P, A>(
  *                             Defaults to [WeightedSelection].
  */
 abstract class FloatBatchUtilityChoiceModel<C, P, A>(
+    override val choices: Set<A>,
     val parameters: P,
-    val distributionFunction: FloatCumulateDistributionArray<Any?>,
-    val selectionFunction: FloatSelectionFunctionArray,
+    val distributionFunction: FloatCumulateDistributionArray<Any?> = FloatMultinomialLogitArray(),
+    val selectionFunction: FloatSelectionFunctionArray = FloatWeightedSelection()
 ): FixedChoiceModel<A, C> {
 
     private val alternatives = choices.toList()
@@ -185,7 +187,7 @@ abstract class FloatBatchUtilityChoiceModel<C, P, A>(
         return utilities.mapValues { (alternative, _) ->
             // probabilities are cumulated
             val alternativeIndex = alternativeToIndex[alternative]!!
-            val previousVal = bufferArray[alternativeIndex - 1] ?: 0f
+            val previousVal = bufferArray.getOrElse(alternativeIndex - 1) { 0f }
             val currentVal = bufferArray[alternativeIndex]
             (currentVal - previousVal).toDouble() // de-cumulate probabilities
         }
