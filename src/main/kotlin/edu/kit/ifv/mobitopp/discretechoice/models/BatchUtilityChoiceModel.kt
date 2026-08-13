@@ -140,8 +140,8 @@ abstract class FloatBatchUtilityChoiceModel<C, P, A>(
     val selectionFunction: FloatSelectionFunctionArray,
 ): FixedChoiceModel<A, C> {
 
+    private val alternatives = choices.toList()
     private val alternativeToIndex: Map<A, Int> = choices.withIndex().associate{ it.value to it.index }
-    private val indexToAlternative: Map<Int, A> =  choices.withIndex().associate{ it.index to it.value}
 
     /**
      * Generates all utilities for a situation in one go. The array probabilities have to have the size of [choices.size].
@@ -158,7 +158,7 @@ abstract class FloatBatchUtilityChoiceModel<C, P, A>(
             throw IllegalStateException("'$name'-Model: Failed to cumulate probabilities, which should be impossible")
         }
         val selectedIndex = selectionFunction.calculateSelection(array, random)
-        return indexToAlternative[selectedIndex]!!
+        return alternatives[selectedIndex]!!
     }
 
     /**
@@ -172,7 +172,7 @@ abstract class FloatBatchUtilityChoiceModel<C, P, A>(
     }
 
     /**
-     * These are non-cumulated
+     * These are non-cumulated probabilities for each alternative.
      */
     override fun probabilities(utilities: Map<A, Double>): Map<A, Double> {
         if (!this.choices.containsAll(utilities.keys)) error("Model '$name' called with invalid indices.")
@@ -201,7 +201,7 @@ abstract class FloatBatchUtilityChoiceModel<C, P, A>(
         require(choices.containsAll(injections.keys)) { "Inconsistent parameters."}
         val utilities = parameters.generateUtilitiesArray()
         val filteredUtilities = FloatArray(this.choices.size) { index ->
-            val alternative = indexToAlternative[index]
+            val alternative = alternatives[index]
             if (choices.contains(alternative)) {
                 val utility = utilities[index]
                 injections[alternative]?.invoke(utility.toDouble())?.toFloat() ?: utility
@@ -212,7 +212,7 @@ abstract class FloatBatchUtilityChoiceModel<C, P, A>(
             error("Could not cumulate probabilities. From the given utilities: ${filteredUtilities.joinToString(", ")}")
         }
         val selectedIndex = selectionFunction.calculateSelection(filteredUtilities, random)
-        return indexToAlternative[selectedIndex]!!
+        return alternatives[selectedIndex]!!
     }
 
     context(_: C, random: Random)
@@ -221,7 +221,7 @@ abstract class FloatBatchUtilityChoiceModel<C, P, A>(
                 "A BatchUtilityChoiceModel does not selecting from choices that are beyond the alternatives it is built for.")
         val utilities = parameters.generateUtilitiesArray()
         val filteredUtilities = FloatArray(this.choices.size) { index ->
-            val alternative = indexToAlternative[index]
+            val alternative = alternatives[index]
             val utility = utilities[index]
             if (choices.contains(alternative))  utility else Float.NEGATIVE_INFINITY
         }
@@ -229,63 +229,6 @@ abstract class FloatBatchUtilityChoiceModel<C, P, A>(
             error("Could not cumulate probabilities. From the given utilities: ${filteredUtilities.joinToString(", ")}")
         }
         val selectedIndex = selectionFunction.calculateSelection(filteredUtilities, random)
-        return indexToAlternative[selectedIndex]!!
-    }
-}
-
-/**
- * This is a FixedChoiceModel that delegates all calls to the delegateChoiceModel. It uses the [characteristicConverter]
- * to map the given characteristic to the required characteristic of the delegate.
- * This class was created to enable enriching the characteristic with more or arbitrary information.
- */
-abstract class CharacteristicMapperChoiceModel<A, C1, C2>(
-): FixedChoiceModel<A, C1>{
-    abstract val delegateChoiceModel: FixedChoiceModel<A, C2>
-    override val choices: Set<A> by lazy {
-        delegateChoiceModel.choices
-    }
-    override val name: String by lazy {
-        "Wrapped-${delegateChoiceModel.name}"
-    }
-    context(characteristic: C1)
-    abstract fun characteristicConverter(): C2
-
-    context(_: C1, random: Random)
-    override fun select(): A {
-        val delegateCharacteristic = characteristicConverter()
-        context(delegateCharacteristic) {
-            return delegateChoiceModel.select()
-        }
-    }
-
-    context(_: C1, _: Random)
-    override fun select(choices: Set<A>): A {
-        val delegateCharacteristic = characteristicConverter()
-        context(delegateCharacteristic) {
-            return delegateChoiceModel.select(choices = choices)
-        }
-    }
-
-    context(_: C1)
-    override fun utility(alternative: A): Double {
-        val delegateCharacteristic = characteristicConverter()
-        context(delegateCharacteristic) {
-            return delegateChoiceModel.utility(alternative = alternative)
-        }
-    }
-
-    override fun probabilities(utilities: Map<A, Double>): Map<A, Double> {
-        return delegateChoiceModel.probabilities(utilities = utilities)
-    }
-
-    context(_: C1, random: Random)
-    override fun selectInjected(
-        choices: Set<A>,
-        injections: Map<A, (Double) -> Double>
-    ): A {
-        val delegateCharacteristic = characteristicConverter()
-        context(delegateCharacteristic) {
-            return delegateChoiceModel.selectInjected(choices = choices, injections = injections)
-        }
+        return alternatives[selectedIndex]!!
     }
 }
