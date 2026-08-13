@@ -3,6 +3,7 @@ package edu.kit.ifv.mobitopp.discretechoice.models
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.assertThrows
 import kotlin.math.absoluteValue
+import kotlin.random.Random
 import kotlin.test.Test
 
 class TestDoubleBatchCM(
@@ -141,7 +142,168 @@ class BatchUtilityChoiceModelTest {
         }
     }
 
+    @Test
+    fun utility() {
+        val choices = IntArray(20) { it }
+        choices.forEach { choice ->
+            context(null) {
+                assertEquals(5.0, floatCM.utility(choice))
+                assertEquals(5.0, doubleCM.utility(choice))
+            }
+        }
+
+        context(null) {
+            assertThrows<IllegalStateException>{
+                floatCM.utility(-1)
+            }
+            assertThrows<IllegalStateException>{
+                doubleCM.utility(-1)
+            }
+
+            assertThrows<IllegalStateException>{
+                floatCM.utility(21)
+            }
+            assertThrows<IllegalStateException>{
+                doubleCM.utility(21)
+            }
+        }
+    }
+
+    @Test
+    fun mapProbabilities() {
+        val utilities = IntArray(20) { it } .associate {
+            if(it == 0) it to 1.0
+            else it to Double.NEGATIVE_INFINITY
+        }
+
+        var probabilitiesMap = floatCM.probabilities(utilities)
+        assertEquals(utilities.size, probabilitiesMap.size)
+        assertAlmostEqual(1.0, probabilitiesMap.values.sum())
+        assertAlmostEqual(1.0, probabilitiesMap[0]!!)
+
+        probabilitiesMap = doubleCM.probabilities(utilities)
+        assertEquals(utilities.size, probabilitiesMap.size)
+        assertAlmostEqual(1.0, probabilitiesMap.values.sum())
+        assertAlmostEqual(1.0, probabilitiesMap[0]!!)
+    }
+
+    @Test
+    fun mapProbabilitiesSubset() {
+        val utilities = IntArray(10) { it  + 5} .associate {
+            if(it == 5) it to 1.0
+            else it to Double.NEGATIVE_INFINITY
+        }
+
+        var probabilitiesMap = floatCM.probabilities(utilities)
+        assertEquals(utilities.size, probabilitiesMap.size)
+        assertAlmostEqual(1.0, probabilitiesMap.values.sum())
+        assertAlmostEqual(1.0, probabilitiesMap[5]!!)
+
+        probabilitiesMap = doubleCM.probabilities(utilities)
+        assertEquals(utilities.size, probabilitiesMap.size)
+        assertAlmostEqual(1.0, probabilitiesMap.values.sum())
+        assertAlmostEqual(1.0, probabilitiesMap[5]!!)
+    }
+
+    @Test
+    fun select() {
+        val choices = IntArray(20) { it }.toSet()
+
+        var chose: List<Int> = List(1000) {
+            context(null, Random(0)) {
+                floatCM.select()
+            }
+        }
+        assert(choices.containsAll(chose))
+
+        chose = List(1000) {
+            context(null, Random(0)) {
+                doubleCM.select()
+            }
+        }
+        assert(choices.containsAll(chose))
+    }
+
+    @Test
+    fun selectSubset() {
+        val subset = IntArray(10) { it  + 5}.toSet()
+
+        var chose: List<Int> = List(1000) {
+            context(null, Random(0)) {
+                floatCM.select(subset)
+            }
+        }
+        assert(subset.containsAll(chose))
+
+        chose = List(1000) {
+            context(null, Random(0)) {
+                doubleCM.select(subset)
+            }
+        }
+        assert(subset.containsAll(chose))
+    }
+
+    @Test
+    fun selectInjectedSubset() {
+        val subset = IntArray(10) { it  + 5 }.toSet()
+        val utilities = IntArray(10) { it  + 5} .associate {
+            if(it == 5 || it == 6) it to 1.0
+            else it to Double.NEGATIVE_INFINITY
+        }
+        var chose: List<Int> = List(1000) {
+            context(null, Random(0)) {
+                floatCM.selectInjected(subset, utilities.mapValues { (elem, utility) ->
+                    { _ -> utility }
+                })
+            }
+        }
+        chose.forEach {
+            assert(it == 5 || it == 6)
+        }
+
+        chose = List(1000) {
+            context(null, Random(0)) {
+                doubleCM.selectInjected(subset, utilities.mapValues { (elem, utility) ->
+                    { _ -> utility }
+                })
+            }
+        }
+        chose.forEach {
+            assert(it == 5 || it == 6)
+        }
+    }
+
+    @Test
+    fun selectInjectedWeirdMap() {
+        val subset = IntArray(10) { it  + 5 }.toSet()
+        val utilities = IntArray(22) { it } .associate {
+            if(it == 5 || it == 6) it to 1.0
+            else it to Double.NEGATIVE_INFINITY
+        }
+        var chose: List<Int> = List(1000) {
+            context(null, Random(0)) {
+                floatCM.selectInjected(subset, utilities.mapValues { (elem, utility) ->
+                    { _ -> utility }
+                })
+            }
+        }
+        chose.forEach {
+            assert(it == 5 || it == 6)
+        }
+
+        chose = List(1000) {
+            context(null, Random(0)) {
+                doubleCM.selectInjected(subset, utilities.mapValues { (elem, utility) ->
+                    { _ -> utility }
+                })
+            }
+        }
+        chose.forEach {
+            assert(it == 5 || it == 6)
+        }
+    }
+
     fun assertAlmostEqual(a: Double, b: Double) {
-        assert((a - b).absoluteValue < 0.000001)
+        assert((a - b).absoluteValue < 0.000001) {"a: $a, b: $b"}
     }
 }

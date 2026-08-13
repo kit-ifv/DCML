@@ -87,7 +87,6 @@ abstract class BatchUtilityChoiceModel<C, P, A>(
     ): A {
         if (!this.choices.containsAll(choices)) error("model '$name' selectInjected called with choices " +
                 "outside of the models default choices. A BatchUtilityChoiceModel does not support this.")
-        require(choices.containsAll(injections.keys)) { "Inconsistent parameters."}
         val utilities = parameters.generateUtilitiesArray()
         val filteredUtilities = DoubleArray(this.choices.size) { index ->
             val alternative = alternatives[index]
@@ -239,7 +238,6 @@ abstract class FloatBatchUtilityChoiceModel<C, P, A>(
     ): A {
         if (!this.choices.containsAll(choices)) error("model '$name' selectInjected called with choices " +
                 "outside of the models default choices. A BatchUtilityChoiceModel does not support this.")
-        require(choices.containsAll(injections.keys)) { "Inconsistent parameters."}
         val utilities = parameters.generateUtilitiesArray()
         val filteredUtilities = FloatArray(this.choices.size) { index ->
             val alternative = alternatives[index]
