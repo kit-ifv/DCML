@@ -117,6 +117,45 @@ abstract class BatchUtilityChoiceModel<C, P, A>(
         val selectedIndex = selectionFunction.calculateSelection(filteredUtilities, random)
         return alternatives[selectedIndex]!!
     }
+
+
+    /**
+     * This model is abstract, we return a wrapper that mostly refers to this instance.
+     * Not super efficient, because we need to filter the results all-the-time
+     */
+    override fun fixed(choices: Set<A>): FixedChoiceModel<A, C> {
+        if (!this.choices.containsAll(choices)) error("model '$name' selectInjected called with choices " +
+                "outside of the models default choices. A BatchUtilityChoiceModel does not support this.")
+        if (choices.containsAll(this.choices)) {
+            return this
+        }
+        return object: BatchUtilityChoiceModel<C, P, A>(
+            parameters = parameters,
+            choices = choices,
+            distributionFunction = distributionFunction,
+            selectionFunction = selectionFunction,
+        ) {
+            val validIndices: List<Int> = choices.toList().map { alternative ->
+                val originalIndex = this@BatchUtilityChoiceModel.alternativeToIndex[alternative]!!
+                originalIndex
+            }
+
+            context(characteristic: C)
+            override fun P.generateUtilitiesArray(): DoubleArray {
+
+                val utilArray = this@BatchUtilityChoiceModel.run {
+                    generateUtilitiesArray()
+                }
+
+                return validIndices.map { index ->
+                    utilArray[index]
+                }.toDoubleArray()
+            }
+
+            override val name: String
+                get() = "Fixed-$name"
+        } as FixedChoiceModel<A, C>
+    }
 }
 
 /**
@@ -232,5 +271,43 @@ abstract class FloatBatchUtilityChoiceModel<C, P, A>(
         }
         val selectedIndex = selectionFunction.calculateSelection(filteredUtilities, random)
         return alternatives[selectedIndex]!!
+    }
+
+    /**
+     * This model is abstract, we return a wrapper that mostly referrers to this instance.
+     * @param choices __Has to be subset of current choices!__ Otherwise no sensible wrapping can be established
+     */
+    override fun fixed(choices: Set<A>): FixedChoiceModel<A, C> {
+        if (!this.choices.containsAll(choices)) error("model '$name' selectInjected called with choices " +
+                "outside of the models default choices. A BatchUtilityChoiceModel does not support this.")
+        if (choices.containsAll(this.choices)) {
+            return this // equal set of choices, no wrapping needed
+        }
+        return object: FloatBatchUtilityChoiceModel<C, P, A>(
+            parameters = parameters,
+            choices = choices,
+            distributionFunction = distributionFunction,
+            selectionFunction = selectionFunction,
+        ) {
+            val validIndices: List<Int> = choices.toList().map { alternative ->
+                val originalIndex = this@FloatBatchUtilityChoiceModel.alternativeToIndex[alternative]!!
+                originalIndex
+            }
+
+            context(characteristic: C)
+            override fun P.generateUtilitiesArray(): FloatArray {
+
+                val utilArray = this@FloatBatchUtilityChoiceModel.run {
+                    generateUtilitiesArray()
+                }
+
+                return validIndices.map { index ->
+                    utilArray[index]
+                }.toFloatArray()
+            }
+
+            override val name: String
+                get() = "Fixed-$name"
+        } as FixedChoiceModel<A, C>
     }
 }
