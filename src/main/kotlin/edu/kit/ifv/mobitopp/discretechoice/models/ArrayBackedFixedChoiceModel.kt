@@ -12,12 +12,9 @@ import kotlin.random.Random
 /**
  * This class uses, and in particular reuses a double array for both the utilities and the probabilities.
  * The array is modified inplace, using the corresponding CumulateDistribution Array and SelectionFunctionArray.
- *
- *
  */
 
 class ArrayBackedFixedChoiceModel<A, in C, P>(
-
     val utilityAssignment: UtilityAssignment<A, C, P>,
     override val choices: Set<A>,
     val distributionFunction: CumulateDistributionArray<P> = MultinomialLogitArray(),
@@ -45,7 +42,6 @@ class ArrayBackedFixedChoiceModel<A, in C, P>(
 
     private val utilityFunctions: Array<UtilityFunction<A, C, P>> = alternatives.map {
         utilityAssignment.getUtilityFunctionFor(it)!!
-
     }.toTypedArray()
 
     context(c: C, random: Random)
@@ -54,7 +50,6 @@ class ArrayBackedFixedChoiceModel<A, in C, P>(
             utilityFunctions[it].calculateUtility(alternatives[it], c, parameters)
         }
         return selectInternal(calculationArray) { choices }
-
     }
 
     context(c: C, random: Random)

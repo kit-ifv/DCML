@@ -47,7 +47,6 @@ data class FixedChoiceModelImpl<A,in C>(
 
 }
 
-
 fun <A, C> FixedChoiceModel<A, C>.addFilter(filter: ChoiceFilter<A, C>): FilteredFixedChoiceModel<A, C> {
     return FilteredFixedChoiceModel(this, choices, filter)
 }
