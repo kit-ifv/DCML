@@ -25,7 +25,7 @@ import kotlin.random.Random
  *                             based on the computed cumulated probability distribution.
  *                             Defaults to [WeightedSelection].
  */
-abstract class BatchUtilityChoiceModel<C, P, A>(
+abstract class BatchUtilityChoiceModel<A, C, P>(
     val parameters: P,
     final override val choices: Set<A>,
     val distributionFunction: CumulateDistributionArray<Any?> = MultinomialLogitArray(),
@@ -128,7 +128,7 @@ abstract class BatchUtilityChoiceModel<C, P, A>(
         if (choices.containsAll(this.choices)) {
             return this
         }
-        return object: BatchUtilityChoiceModel<C, P, A>(
+        return object: BatchUtilityChoiceModel<A, C, P>(
             parameters = parameters,
             choices = choices,
             distributionFunction = distributionFunction,
@@ -173,7 +173,7 @@ abstract class BatchUtilityChoiceModel<C, P, A>(
  *                             based on the computed cumulated probability distribution.
  *                             Defaults to [WeightedSelection].
  */
-abstract class FloatBatchUtilityChoiceModel<C, P, A>(
+abstract class FloatBatchUtilityChoiceModel<A, C, P>(
     override val choices: Set<A>,
     val parameters: P,
     val distributionFunction: FloatCumulateDistributionArray<Any?> = FloatMultinomialLogitArray(),
@@ -281,7 +281,7 @@ abstract class FloatBatchUtilityChoiceModel<C, P, A>(
         if (choices.containsAll(this.choices)) {
             return this // equal set of choices, no wrapping needed
         }
-        return object: FloatBatchUtilityChoiceModel<C, P, A>(
+        return object: FloatBatchUtilityChoiceModel<A, C, P>(
             parameters = parameters,
             choices = choices,
             distributionFunction = distributionFunction,

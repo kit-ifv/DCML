@@ -9,7 +9,7 @@ import kotlin.test.Test
 class TestDoubleBatchCM(
     originalChoices: Set<Int>,
     override val name: String = "Test-Double",
-) : BatchUtilityChoiceModel<Unit?, Unit?, Int>(
+) : BatchUtilityChoiceModel<Int, Unit?, Unit?>(
     choices = originalChoices,
     parameters = null
 ) {
@@ -24,7 +24,7 @@ class TestDoubleBatchCM(
 class TestFloatBatchCM(
     originalChoices: Set<Int>,
     override val name: String = "Test-Float"
-) : FloatBatchUtilityChoiceModel<Unit?, Unit?, Int>(
+) : FloatBatchUtilityChoiceModel<Int, Unit?, Unit?>(
     choices = originalChoices,
     parameters = null
 ) {
