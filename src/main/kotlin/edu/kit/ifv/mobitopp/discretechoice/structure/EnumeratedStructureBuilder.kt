@@ -6,30 +6,80 @@ import edu.kit.ifv.mobitopp.discretechoice.models.UtilityFunction
 import edu.kit.ifv.mobitopp.discretechoice.utilityassignment.UtilityAssignment
 import edu.kit.ifv.mobitopp.discretechoice.utilityassignment.UtilityEnumeration
 
+/**
+ * Builder that can produce a [UtilityAssignment].
+ *
+ * Implementations collect the information necessary to create a [UtilityAssignment] and
+ * expose a single terminal operation [build] that returns the built instance.
+ *
+ * @param A the type representing an option/alternative.
+ * @param C the type of context specific parameters available to utility functions.
+ * @param P the type of any additional parameters used by utility functions.
+ */
 fun interface UtilityAssignmentBuilder<in A, in C, in P> {
 
     // TODO add name here?
-
+    /**
+     * Build and return a [UtilityAssignment] described by this builder.
+     *
+     * @return a [UtilityAssignment] configured according to the builder state.
+     */
     fun build(): UtilityAssignment<A, C, P>
 }
 
+/**
+ * Builder that produces a [UtilityEnumeration], a specialization of [UtilityAssignment]
+ * that enumerates a discrete set of alternatives.
+ *
+ * This functional interface narrows the return type of [build] to [UtilityEnumeration].
+ *
+ * @param A the type representing an option/alternative.
+ * @param C the type of context specific parameters available to utility functions.
+ * @param P the type of any additional parameters used by utility functions.
+ */
 fun interface UtilityEnumerationBuilder<A, in C, in P> : UtilityAssignmentBuilder<A, C, P> {
-
+    /**
+     * Build and return a [UtilityEnumeration] described by this builder.
+     *
+     * @return a [UtilityEnumeration] configured according to the builder state.
+     */
     override fun build(): UtilityEnumeration<A, C, P>
 }
 
+/**
+ * Builder API for enumerated (discrete) structures of alternatives.
+ *
+ * Implementations allow registering utility functions for specific alternatives (options).
+ * Several convenience overloads are provided to register utility functions using different
+ * forms of parameter and context access.
+ *
+ * @param A the type representing an option/alternative.
+ * @param C the type of context specific parameters available to utility functions.
+ * @param P the type of any additional parameters used by utility functions.
+ */
 interface EnumeratedStructureBuilder<A, C, P> {
     /**
-     * Checking whether a situation is equal to a certain element x is a concretization of the more general
-     * concept of when to apply a rule.
+     * Register a utility function for the given concrete [option].
+     *
+     * Implementations are expected to record the association between [option] and
+     * [utilityFunction] so that it can later be used by a [UtilityEnumeration] or
+     * other consumer.
+     *
+     * @param option the specific alternative to associate the function with.
+     * @param utilityFunction the utility function that computes a utility for this [option].
      */
     fun addUtilityFunctionByIdentifier(option: A, utilityFunction: UtilityFunction<A, C, P>)
 
     /**
-     * Add an option to a nest block via specifying the concrete choice [option] as well as a [utilityFunction] to
-     * create a utilityassignment function from the parameters and choice situations.
+     * Convenience: add an option by providing a receiver-style utility function on [P].
+     *
+     * The provided [utilityFunction] is a lambda with receiver [P] that accepts separate
+     * parameters (alternative and context). It is wrapped into an internal [UtilityFunction]
+     * before registration.
+     *
+     * @param option the specific alternative to register.
+     * @param utilityFunction receiver-style function: `P.(A, C) -> Double`.
      */
-
     fun option(option: A, utilityFunction: P.(A, C) -> Double) {
         val internalUtilityFunction = UtilityFunction { a: A, g: C, p: P ->
             utilityFunction.invoke(p, a, g)
@@ -38,6 +88,13 @@ interface EnumeratedStructureBuilder<A, C, P> {
         addUtilityFunctionByIdentifier(option, internalUtilityFunction)
     }
 
+    /**
+     * Convenience: add an option by providing a receiver-style utility function on [P]
+     * that accepts a Pair of alternative and context.
+     *
+     * @param option the specific alternative to register.
+     * @param utilityFunction receiver-style function: `P.(Pair<A, C>) -> Double`.
+     */
     fun option(option: A, utilityFunction: P.(Pair<A, C>) -> Double) {
         val internalUtilityFunction = UtilityFunction { a: A, c: C, p: P ->
             utilityFunction.invoke(p, a to c)
@@ -47,9 +104,15 @@ interface EnumeratedStructureBuilder<A, C, P> {
     }
 
     /**
-     * Add an option to a nest block via specifying the concrete choice [option] as well as a [utilityFunction] to
-     * create a utilityassignment function from the parameters and choice situations. Additionally allows a conversion
-     * to a different parameter object [T] in case the original parameter object is too verbose/complex
+     * Convenience: add an option while first transforming the parameter object [P] into
+     * a custom parameter object of type [T], then applying a utility function on [T].
+     *
+     * This is useful when the raw parameter type [P] is verbose or requires adaptation.
+     *
+     * @param T the derived parameter type produced by [parameters].
+     * @param option the specific alternative to register.
+     * @param parameters a conversion function transforming `P` into `T`.
+     * @param utilityFunction receiver-style function on `T`: `T.(A, C) -> Double`.
      */
     fun <T> option(option: A, parameters: P.() -> T, utilityFunction: T.(A, C) -> Double) {
         val internalUtilityFunction = UtilityFunction { alternative: A, characteristics: C, parameterObject: P ->
@@ -63,6 +126,15 @@ interface EnumeratedStructureBuilder<A, C, P> {
         addUtilityFunctionByIdentifier(option, internalUtilityFunction)
     }
 
+    /**
+     * Convenience: add an option while transforming [P] into [T] and using a utility function
+     * that accepts a Pair of alternative and context.
+     *
+     * @param T the derived parameter type produced by [parameters].
+     * @param option the specific alternative to register.
+     * @param parameters a conversion function transforming `P` into `T`.
+     * @param utilityFunction receiver-style function on `T`: `T.(Pair<A, C>) -> Double`.
+     */
     fun <T> option(option: A, parameters: P.() -> T, utilityFunction: T.(Pair<A, C>) -> Double) {
         val internalUtilityFunction = UtilityFunction { alternative: A, characteristics: C, parameterObject: P ->
             utilityFunction.invoke(
