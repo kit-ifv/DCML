@@ -59,3 +59,55 @@ abstract class CharacteristicMapperChoiceModel<A, C1, C2>(
         }
     }
 }
+
+
+class LambdaMapperChoiceModel<A, C1, C2>(
+    val delegateChoiceModel: FixedChoiceModel<A, C2>,
+    val converter: (C1) -> C2,
+): FixedChoiceModel<A, C1>{
+    override val choices: Set<A> by lazy {
+        delegateChoiceModel.choices
+    }
+    override val name: String by lazy {
+        "Wrapped-${delegateChoiceModel.name}"
+    }
+
+    context(characteristic: C1, random: Random)
+    override fun select(): A {
+        val delegateCharacteristic = converter(characteristic)
+        context(delegateCharacteristic) {
+            return delegateChoiceModel.select()
+        }
+    }
+
+    context(characteristic: C1, random: Random)
+    override fun select(choices: Set<A>): A {
+        val delegateCharacteristic = converter(characteristic)
+        context(delegateCharacteristic) {
+            return delegateChoiceModel.select(choices = choices)
+        }
+    }
+
+    context(characteristic: C1)
+    override fun utility(alternative: A): Double {
+        val delegateCharacteristic = converter(characteristic)
+        context(delegateCharacteristic) {
+            return delegateChoiceModel.utility(alternative = alternative)
+        }
+    }
+
+    override fun probabilities(utilities: Map<A, Double>): Map<A, Double> {
+        return delegateChoiceModel.probabilities(utilities = utilities)
+    }
+
+    context(characteristic: C1, random: Random)
+    override fun selectInjected(
+        choices: Set<A>,
+        injections: Map<A, (Double) -> Double>
+    ): A {
+        val delegateCharacteristic = converter(characteristic)
+        context(delegateCharacteristic) {
+            return delegateChoiceModel.selectInjected(choices = choices, injections = injections)
+        }
+    }
+}
