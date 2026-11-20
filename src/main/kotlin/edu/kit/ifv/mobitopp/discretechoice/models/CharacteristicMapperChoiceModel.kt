@@ -29,7 +29,7 @@ abstract class CharacteristicMapperChoiceModel<A, C1, C2>(
     }
 
     context(_: C1, _: Random)
-    override fun select(choices: Set<A>): A {
+    override fun select(choices: List<A>): A {
         val delegateCharacteristic = characteristicConverter()
         context(delegateCharacteristic) {
             return delegateChoiceModel.select(choices = choices)
@@ -50,7 +50,7 @@ abstract class CharacteristicMapperChoiceModel<A, C1, C2>(
 
     context(_: C1, random: Random)
     override fun selectInjected(
-        choices: Set<A>,
+        choices: List<A>,
         injections: Map<A, (Double) -> Double>
     ): A {
         val delegateCharacteristic = characteristicConverter()
@@ -61,7 +61,8 @@ abstract class CharacteristicMapperChoiceModel<A, C1, C2>(
 }
 
 
-class LambdaMapperChoiceModel<A, C1, C2>(
+
+class LambdaMapperChoiceModel<A, C1, C2> constructor(
     val delegateChoiceModel: FixedChoiceModel<A, C2>,
     val converter: (C1) -> C2,
 ): FixedChoiceModel<A, C1>{
@@ -81,7 +82,7 @@ class LambdaMapperChoiceModel<A, C1, C2>(
     }
 
     context(characteristic: C1, random: Random)
-    override fun select(choices: Set<A>): A {
+    override fun select(choices: List<A>): A {
         val delegateCharacteristic = converter(characteristic)
         context(delegateCharacteristic) {
             return delegateChoiceModel.select(choices = choices)
@@ -102,7 +103,7 @@ class LambdaMapperChoiceModel<A, C1, C2>(
 
     context(characteristic: C1, random: Random)
     override fun selectInjected(
-        choices: Set<A>,
+        choices: List<A>,
         injections: Map<A, (Double) -> Double>
     ): A {
         val delegateCharacteristic = converter(characteristic)

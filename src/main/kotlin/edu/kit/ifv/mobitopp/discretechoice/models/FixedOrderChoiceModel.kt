@@ -13,7 +13,7 @@ data class FixedOrderChoiceModel<A, in C>(
      * @return one chosen alternative
      */
     context(_: C, _: Random)
-    override fun select(choices: Set<A>): A {
+    override fun select(choices: List<A>): A {
         val filtered = choices.filter { filter.filter(it) }
         return this.choices.first { it in filtered }
     }
@@ -34,7 +34,7 @@ data class FixedOrderChoiceModel<A, in C>(
 
     context(_: C, random: Random)
     override fun selectInjected(
-        choices: Set<A>,
+        choices: List<A>,
         injections: Map<A, (Double) -> Double>,
     ): A {
         TODO("Not yet implemented")

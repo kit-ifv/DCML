@@ -2,6 +2,7 @@ package edu.kit.ifv.mobitopp.discretechoice.models
 
 import edu.kit.ifv.mobitopp.discretechoice.structure.DiscreteStructure
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import kotlin.random.Random
 import kotlin.test.Test
 
@@ -18,6 +19,9 @@ class ArrayBackedFixedChoiceModelTest {
                 0.0
             }
             option(3) {
+                .0
+            }
+            option(4) {
                 .0
             }
         }
@@ -42,6 +46,14 @@ class ArrayBackedFixedChoiceModelTest {
                 choiceModel.select(selectionNext)
             }
             assertEquals(choice,2)
+        }
+        val selectionOverNext = setOf(3, 4)
+        repeat(100) {
+            val choice = context(Unit, rng) {
+
+                choiceModel.select(selectionOverNext)
+            }
+            assertTrue(choice in listOf(3,4))
         }
 
 
@@ -79,5 +91,7 @@ class ArrayBackedFixedChoiceModelTest {
 
 
     }
+
+
 
 }

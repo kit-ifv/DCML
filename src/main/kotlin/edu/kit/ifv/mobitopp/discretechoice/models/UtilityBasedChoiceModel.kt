@@ -45,12 +45,18 @@ interface UtilityBasedChoiceModel<A, in C> : BasicChoiceModel<A, C> {
     fun fixed(choices: Set<A>): FixedChoiceModel<A, C> {
         return FixedChoiceModelImpl(this, choices)
     }
-
     /**
      * @param injections a map, which maps the generated utilities for each alternative to some other utility.
      */
     context(_: C, random: Random)
-    fun selectInjected(choices: Set<A>, injections: Map<A, (Double) -> Double>): A
+    fun selectInjected(choices: List<A>, injections: Map<A, (Double) -> Double>): A
+    /**
+     * @param injections a map, which maps the generated utilities for each alternative to some other utility.
+     */
+    context(_: C, random: Random)
+    fun selectInjected(choices: Set<A>, injections: Map<A, (Double) -> Double>): A {
+        return selectInjected(choices.toList(), injections)
+    }
 }
 
 fun <A, C> UtilityBasedChoiceModel<A, C>.select(filter: ChoiceFilter<A, C>): FilteredChoiceModel<A, C> {

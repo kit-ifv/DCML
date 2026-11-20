@@ -41,7 +41,7 @@ data class FixedChoiceModelImpl<A,in C>(
      * @return one chosen alternative
      */
     context(_: C, _: Random)
-    override fun select(choices: Set<A>): A {
+    override fun select(choices: List<A>): A {
         return original.select(choices)
     }
 

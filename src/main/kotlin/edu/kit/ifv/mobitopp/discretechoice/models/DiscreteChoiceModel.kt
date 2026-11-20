@@ -27,7 +27,7 @@ data class DiscreteChoiceModel<A, in C, P>(
      * generator.
      */
     context(_: C, random: Random)
-    override fun select(choices: Set<A>): A =
+    override fun select(choices: List<A>): A =
         selectionFunction.calculateSelection(probabilities(choices), random)
 
     /**
@@ -45,7 +45,7 @@ data class DiscreteChoiceModel<A, in C, P>(
      * @return The selected alternative after applying the modified utilities.
      */
     context(_: C, random: Random)
-    override fun selectInjected(choices: Set<A>, injections: Map<A, (Double) -> Double>): A {
+    override fun selectInjected(choices: List<A>, injections: Map<A, (Double) -> Double>): A {
         val modifiedUtilities = utilities(choices).mapValues { (alternative, utility) ->
             val injection = injections[alternative] ?: { it }
             injection(utility)

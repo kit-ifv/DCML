@@ -14,7 +14,7 @@ open class FilteredChoiceModel<A, in C>(
     override val name = original.name
 
     context(_: C, _: Random)
-    override fun select(choices: Set<A>): A {
+    override fun select(choices: List<A>): A {
         val filteredChoices = choices.filter { filter.filter(it) }.toSet()
         return original.select(filteredChoices)
     }

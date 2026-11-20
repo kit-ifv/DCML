@@ -82,7 +82,7 @@ abstract class BatchUtilityChoiceModel<A, C, P>(
 
     context(_: C, random: Random)
     override fun selectInjected(
-        choices: Set<A>,
+        choices: List<A>,
         injections: Map<A, (Double) -> Double>
     ): A {
         if (!this.choices.containsAll(choices)) error("model '$name' selectInjected called with choices " +
@@ -103,7 +103,7 @@ abstract class BatchUtilityChoiceModel<A, C, P>(
     }
 
     context(_: C, random: Random)
-    override fun select(choices: Set<A>): A {
+    override fun select(choices: List<A>): A {
         if (!this.choices.containsAll(choices)) error("model '$name' called with invalid indices.")
         val utilities = parameters.generateUtilitiesArray()
         val filteredUtilities = DoubleArray(this.choices.size) { index ->
@@ -233,7 +233,7 @@ abstract class FloatBatchUtilityChoiceModel<A, C, P>(
 
     context(_: C, random: Random)
     override fun selectInjected(
-        choices: Set<A>,
+        choices: List<A>,
         injections: Map<A, (Double) -> Double>
     ): A {
         if (!this.choices.containsAll(choices)) error("model '$name' selectInjected called with choices " +
@@ -255,7 +255,7 @@ abstract class FloatBatchUtilityChoiceModel<A, C, P>(
     }
 
     context(_: C, random: Random)
-    override fun select(choices: Set<A>): A {
+    override fun select(choices: List<A>): A {
         if (!this.choices.containsAll(choices)) error("model '$name' called with invalid alternatives. " +
                 "A BatchUtilityChoiceModel does not selecting from choices that are beyond the alternatives it is built for.")
         val utilities = parameters.generateUtilitiesArray()

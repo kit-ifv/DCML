@@ -16,7 +16,16 @@ interface BasicChoiceModel<A, in C> {
      * @return one chosen alternative
      */
     context(_: C, _: Random)
-    fun select(choices: Set<A>): A
+    fun select(choices: List<A>): A
+
+
+    /**
+     * Convenience overload for callers using sets.
+     */
+    context(_: C, _: Random)
+    fun select(choices: Set<A>): A {
+        return select(choices.toList())
+    }
 
     /**
      * This function allows a vararg call, instead of having to wrap to a set manually.
@@ -24,9 +33,10 @@ interface BasicChoiceModel<A, in C> {
      */
     context(_: C, _: Random)
     fun select(choices: Array<out A>): A {
-        return select(choices.toSet())
+        return select(choices.toList())
     }
 }
+
 
 fun <A, C> BasicChoiceModel<A, C>.addFilter(filter: ChoiceFilter<A, C>): BasicFilteredChoiceModel<A, C> {
     return BasicFilteredChoiceModel(this, filter, name)

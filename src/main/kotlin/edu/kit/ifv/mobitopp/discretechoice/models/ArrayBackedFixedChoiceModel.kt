@@ -87,7 +87,7 @@ class ArrayBackedFixedChoiceModel<A, in C, P>(
      * @return one chosen alternative
      */
     context(c: C, random: Random)
-    override fun select(choices: Set<A>): A {
+    override fun select(choices: List<A>): A {
         if (choices.size == 1) return choices.iterator().next()
         val calculationArray = spawnUtilityArray(choices, c)
         return selectInternal(calculationArray) {
@@ -120,7 +120,7 @@ class ArrayBackedFixedChoiceModel<A, in C, P>(
 
     context(c: C, random: Random)
     override fun selectInjected(
-        choices: Set<A>,
+        choices: List<A>,
         injections: Map<A, (Double) -> Double>,
     ): A {
 
@@ -134,7 +134,7 @@ class ArrayBackedFixedChoiceModel<A, in C, P>(
         return selectInternal(calculationArray) { choices }
     }
 
-    private fun spawnUtilityArray(choices: Set<A>, c: C): DoubleArray {
+    private fun spawnUtilityArray(choices: Collection<A>, c: C): DoubleArray {
         val calculationArray = DoubleArray(alternatives.size) {
 
             Double.NEGATIVE_INFINITY

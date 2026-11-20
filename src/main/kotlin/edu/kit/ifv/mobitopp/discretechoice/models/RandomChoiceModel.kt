@@ -12,7 +12,7 @@ data class RandomChoiceModel<A, in C>(override val name: String, override val ch
      * @return one chosen alternative
      */
     context(_: C, random: Random)
-    override fun select(choices: Set<A>): A {
+    override fun select(choices: List<A>): A {
         return choices.random(random)
     }
 
@@ -32,7 +32,7 @@ data class RandomChoiceModel<A, in C>(override val name: String, override val ch
 
     context(_: C, random: Random)
     override fun selectInjected(
-        choices: Set<A>,
+        choices: List<A>,
         injections: Map<A, (Double) -> Double>,
     ): A {
         TODO("Not yet implemented")
